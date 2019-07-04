@@ -1,7 +1,7 @@
 {
 	"name": "bglib",
 	"version": "1.0.0",
-	"description": "Frontend Javascript Library",
+	"description": "Front-end Javascript Library",
 	"license": "MIT",
 	"devDependencies": {
 		"grunt": "^1.0.4",
