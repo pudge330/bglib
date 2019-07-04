@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="utf8">
+	<title>Examples - bglib</title>
+	<script src="/dist/bglib.js"></script>
+	<style type="text/css">
+		html,body {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+<ul data-test-attr="foo:bar">
+	<li>List Item 1</li>
+	<li>List Item 2</li>
+	<li>List Item 3</li>
+	<li>List Item 4</li>
+</ul>
+<ul data-foo-attr="im here">
+	<li>List Item 1</li>
+	<li>List Item 2</li>
+	<li>List Item 3</li>
+	<li>List Item 4</li>
+</ul>
+<ul>
+	<li>List Item 1</li>
+	<li>List Item 2</li>
+	<li>List Item 3</li>
+	<li>List Item 4</li>
+</ul>
+<script>
+	//--jLyte test
+	var jLyte = bglib.jLyte;
+	var $elms = jLyte('ul');
+	$elms.addClass('yo-yo-blu');
+	$elms.addClass('yo-yo-blu-light-2x');
+	$elms.each(function(i) {
+		var $el = jLyte(this);
+		$el.addClass('ul-list-' + (i + 1));
+		var $items = $el.find('li');
+		$items.addClass('list-item-ul' + i);
+		$items.each(function(j) {
+			var $this = jLyte(this);
+			$this.addClass('list-item-ul' + i + '-' + j);
+		});
+		$el.css('background-color', 'red');
+	});
+
+	// //--AppRouter test
+	// var _routes = {
+	// 	home: {
+	// 		pattern: '/'
+	// 		,action: 'homePage'
+	// 	}
+	// 	,services: {
+	// 		pattern: '/shop/{department}'
+	// 		,action: 'shopPage'
+	// 		,defaults: {
+	// 			sort: 'relevance|asc'
+	// 			,perPage: '30'
+	// 			,department: 'all'
+	// 		}
+	// 	}
+	// };
+	// var routerA = new bglib.AppRouter(_routes);
+	// var route = '/shop/electronics';
+	// var match = routerA.match(route);
+	// if (match) {
+	// 	console.log('matched', match);
+	// }
+	// else {
+	// 	console.log('unmatched', route);
+	// }
+
+	// var storage = new bglib.Storage();
+	// storage.page.set('testData', _routes);
+
+	// var tm = new bglib.Timeout({
+	// 	time: 1800
+	// 	,callback: function() {
+	// 		bglib.jLyte('body').css('transition', 'background-color 1.5s');
+	// 		bglib.jLyte('body').css('background-color', 'red');
+	// 		setTimeout(function() {
+	// 			location.reload();
+	// 		}, 1500);
+	// 	}
+	// });
+
+	// var urls = [
+	// 	'https://github.com/pudge330/UrlParserJS'
+	// 	,'https://downloads.examplewebsite.com/pudge330/UrlParserJS?type=zip'
+	// 	,'https://qz.com/1595583/english-is-one-of-the-worlds-weirdest-languages-say-linguists/?utm_source=pocket-newtab'
+	// 	,'https://www.expertreviews.co.uk/technology/1403865/see-what-happens-when-you-tell-google-im-feeling-curious'
+	// 	,'https://www.amazon.com/Etekcity-Household-Appliances-Unlimited-Connections/dp/B00DQELHBS/ref=sr_1_27?keywords=wifi+remote&link_code=qs&qid=1555735644&s=gateway&sourceid=Mozilla-search&sr=8-27'
+	// ];
+	// for (var i = 0; i < urls.length; i++) {
+	// 	var parts = bglib.UrlParser.parse(urls[i]);
+	// 	var build = bglib.UrlParser.build(parts);
+	// 	console.log(urls[i], build, (urls[i] == build));
+	// 	console.log(parts);
+	// }
+
+	// var th = document.createElement('thead');
+	// th.innerHTML = '<tr><td>new column foo:bar</td></tr>';
+
+	// console.log(th);
+
+	// var frag = document.createRange().createContextualFragment('<table><thead><tr><td>new column foo:bar</td></tr></thead></table>');
+	// console.log(frag);
+
+	// var frag = document.createRange().createContextualFragment('<p class="test">foo :: bar</p>');
+	// console.log(frag.childNodes);
+
+	// var frag = document.createRange().createContextualFragment('hello world');
+	// console.log(frag.childNodes);
+
+	// var list3 = jLyte('.ul-list-3');
+
+	// console.log(list3);
+
+	// for (var i = 15; i >= 5; i--) {
+	// 	var li = document.createElement('li');
+	// 	li.innerHTML = 'List Item ' + i;
+	// 	li = jLyte(li);
+	// 	list3.prepend(li, '<li>' + i + '-helper</li>');
+	// }
+
+	// for (var i = 5; i <= 15; i++) {
+	// 	var li = document.createElement('li');
+	// 	li.innerHTML = 'List Item ' + i;
+	// 	li = jLyte(li);
+	// 	list3.append(jLyte([li, '<li>' + i + '-helper</li>']));
+	// }	
+
+	// console.log(bglib.getElements('<div class="redBox container"><div class="row"><p class="col-tn-12">Hello World!</p></div></div>'));
+	// console.log(bglib.getElements('ul'));
+
+	// console.log('bglib.El.elements()');
+	// console.log(bglib.El.elements(
+	// 	[
+	// 		'<div class="redBox container"><div class="row"><p class="col-tn-12">Hello World!</p></div></div>'
+	// 		,'<td>new column</td>'
+	// 		,'<tr class="someRow" id="newRow_123"><td>new column2</td></tr>'
+	// 		,'<thead></thead>'
+	// 	]
+	// 	,document.createElement('div')
+	// 	,[
+	// 		'<tr class="someRow" id="newRow_123"><td>new column2</td></tr>'
+	// 		,'<thead></thead>'
+	// 		,document.createElement('span')
+	// 		,'txt#Hello my name is brandon garcia.'
+	// 		,'<li>Newlist Item 001</li>'
+	// 	]
+	// 	,list3
+	// ));
+	// bglib.jLyte(function() {
+	// 	console.log('jLyte(func) Dom Ready');
+	// });
+
+	// var ae = new bglib.UserAutoExpire({
+	// 	exp: 1800 //--30 minutes
+	// 	,warningDuration: 60
+	// 	,expireUrl: '#logout'
+	// 	,renewUrl: '#keep-session-alive'
+	// });
+
+	// storage.session.set('test001', {
+	// 	exp: 1800 //--30 minutes
+	// 	,warningDuration: 60
+	// 	,expireUrl: '#logout'
+	// 	,renewUrl: '#keep-session-alive'
+	// });
+
+	// storage.local.set('test001', {
+	// 	exp: 1800 //--30 minutes
+	// 	,warningDuration: 60
+	// 	,expireUrl: '#logout'
+	// 	,renewUrl: '#keep-session-alive'
+	// });
+
+	// var 
+
+	var $el = jLyte('[data-foo-attr="im here"]');
+	$el.on('mouseover', {foo: 'baz'}, function(evt) {
+		console.log(['mouse over A', this, evt]);
+	});
+
+	$el.on('mouseover', 'li:first-child', {el: $el, foo: 'bar'}, function(evt) {
+		console.log(['mouse over B', this, evt]);
+		// evt.stopPropagation();
+	});
+
+	var cbC = function(evt) {
+		console.log(['mouse over C', this, evt]);
+	};
+	$el.on('mouseover', 'li:first-child', {name: 'brandon'}, cbC);
+	$el.off('mouseover', 'li:first-child', cbC);
+
+	bglib.DomEvents.window.on('load', function() {
+		console.log('window loaded 2');
+	});
+
+	// var el = document.querySelector('[data-foo-attr="im here"]');
+	// var $el = jLyte(el);
+	// console.log(el, $el);
+
+	// var em = new bglib.EventManager(el);
+	// em.on('mouseover', {foo: 'baz'}, function(evt) {
+	// 	console.log(['mouse over A', this, evt]);
+	// });
+	// em.on('mouseover', 'li:first-child', {el: $el, foo: 'bar'}, function(evt) {
+	// 	console.log(['mouse over B', this, evt]);
+	// 	// evt.stopPropagation();
+	// });
+	// var cbC = function(evt) {
+	// 	console.log(['mouse over C', this, evt]);
+	// };
+	// em.on('mouseover', 'li:first-child', cbC);
+	// em.off('mouseover', 'li:first-child', cbC);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+{
+	"base:all": {
+		"src": null
+		,"deps": [
+			"base.create", "base.noop", "base.setRegisteredModule"
+		]
+	}
+	,"fn:all": {
+		"src": null
+		,"deps": [
+			"fn.debounce", "fn.documentReady", "fn.emToPx", "fn.formatDecimal", "fn.formatPrice", "fn.htmlEntities", "fn.interpolate", "fn.rand", "fn.request", "fn.toCamelCase", "fn.toProperCase"
+		]
+	}
+	,"mod:all": {
+		"src": null
+		,"deps": [
+			"AppRouter", "BaseModule", "DatasetModule", "DataType", "DomEvents", "Element", "ElementalData", "Event", "EventManager", "EventModule", "EventUtil", "JLyte", "JSCookie", "Storage", "TagLoader", "Timeout", "UrlParser", "UserAutoExpire", "Webify"
+		]
+	}
+	,"base.create": {
+		"src": "src/functions/base.create.js"
+		,"deps": [
+			"base.setRegisteredModule"
+		]
+	}
+	,"base.noop": {
+		"src": "src/functions/base.noop.js"
+		,"deps": []
+	}
+	,"base.setRegisteredModule": {
+		"src": "src/functions/base.setRegisteredModule.js"
+		,"deps": [
+			"base.create"
+		]
+	}
+	,"fn.debounce": {
+		"src": "src/functions/fn.debounce.js"
+		,"deps": []
+	}
+	,"fn.documentReady": {
+		"src": "src/functions/fn.documentReady.js"
+		,"deps": []
+	}
+	,"fn.emToPx": {
+		"src": "src/functions/fn.emToPx.js"
+		,"deps": [
+			"Element"
+		]
+	}
+	,"fn.formatDecimal": {
+		"src": "src/functions/fn.formatDecimal.js"
+		,"deps": []
+	}
+	,"fn.formatPrice": {
+		"src": "src/functions/fn.formatPrice.js"
+		,"deps": []
+	}
+	,"fn.htmlEntities": {
+		"src": "src/functions/fn.htmlEntities.js"
+		,"deps": []
+	}
+	,"fn.interpolate": {
+		"src": "src/functions/fn.interpolate.js"
+		,"deps": []
+	}
+	,"fn.rand": {
+		"src": "src/functions/fn.rand.js"
+		,"deps": []
+	}
+	,"fn.request": {
+		"src": "src/functions/fn.request.js"
+		,"deps": [
+			"DataType"
+		]
+	}
+	,"fn.toCamelCase": {
+		"src": "src/functions/fn.toCamelCase.js"
+		,"deps": []
+	}
+	,"fn.toProperCase": {
+		"src": "src/functions/fn.toProperCase.js"
+		,"deps": [
+			"fn.toCamelCase"
+		]
+	}
+	,"Animate": {
+		"src": "src/modules/Animate.js"
+		,"deps": [
+			"DataType"
+			,"EventModule"
+		]
+	}
+	,"AppRouter": {
+		"src": "src/modules/AppRouter.js"
+		,"deps": [
+			"BaseModule"
+		]
+	}
+	,"BaseModule": {
+		"src": "src/modules/BaseModule.js"
+		,"deps": [
+			"base.setRegisteredModule"
+		]
+	}
+	,"DatasetModule": {
+		"src": "src/modules/DatasetModule.js"
+		,"deps": [
+			"base.setRegisteredModule"
+			,"EventModule"
+		]
+	}
+	,"DataType": {
+		"src": "src/modules/DataType.js"
+		,"deps": []
+	}
+	,"DomEvents": {
+		"src": "src/modules/DomEvents.js"
+		,"deps": [
+			"fn.documentReady"
+			,"Event"
+			,"EventManager"
+			,"EventModule"
+			,"EventUtil"
+		]
+	}
+	,"Element": {
+		"src": "src/modules/Element.js"
+		,"deps": [
+			"DataType"
+			,"ElementalData"
+			,"EventManager"
+		]
+	}
+	,"ElementalData": {
+		"src": "src/modules/ElementalData.js"
+		,"deps": []
+	}
+	,"Event": {
+		"src": "src/modules/Event.js"
+		,"deps": [
+			"BaseModule"
+		]
+	}
+	,"EventManager": {
+		"src": "src/modules/EventManager.js"
+		,"deps": [
+			"base.create"
+			,"fn.documentReady"
+			,"DataType"
+			,"Event"
+			,"EventUtil"
+		]
+	}
+	,"EventModule": {
+		"src": "src/modules/EventModule.js"
+		,"deps": [
+			"base.setRegisteredModule"
+			,"BaseModule"
+			,"Event"
+		]
+	}
+	,"EventUtil": {
+		"src": "src/modules/EventUtil.js"
+		,"deps": []
+	}
+	,"JLyte": {
+		"src": "src/modules/JLyte.js"
+		,"deps": [
+			"fn.toCamelCase"
+			,"DataType"
+			,"DomEvents"
+			,"Element"
+		]
+	}
+	,"JSCookie": {
+		"src": "src/modules/JSCookie.js"
+		,"deps": []
+	}
+	,"Storage": {
+		"src": "src/modules/Storage.js"
+		,"deps": [
+			"fn.rand"
+			,"Element"
+			,"TagLoader"
+		]
+	}
+	,"TagLoader": {
+		"src": "src/modules/TagLoader.js"
+		,"deps": []
+	}
+	,"Timeout": {
+		"src": "src/modules/Timeout.js"
+		,"deps": []
+	}
+	,"UrlParser": {
+		"src": "src/modules/UrlParser.js"
+		,"deps": []
+	}
+	,"UserAutoExpire": {
+		"src": "src/modules/UserAutoExpire.js"
+		,"deps": [
+			"base.create"
+			,"fn.rand"
+			,"fn.request"
+			,"Element"
+			,"EventUtil"
+			,"Timeout"
+		]
+	}
+	,"Webify": {
+		"src": "src/modules/Webify.js"
+		,"deps": []
+	}
+}
