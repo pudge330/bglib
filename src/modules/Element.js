@@ -90,7 +90,7 @@
 	    elData.set(e, key, val);
 	};
 	m.data.has = function(e, key) {
-	    elData.has(e, key);
+	    return elData.has(e, key);
 	};
 	m.data.remove = function(e, key) {
 	    elData.remove(e, key);

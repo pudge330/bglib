@@ -17,6 +17,16 @@ finalConfig = bglib.buildGruntConfig({
 		,srcEnd: ["src/wraps/jlyte-wrap-end.js"]
 		,dest: "dist/bglib-jlyte.js"
 	}
+	,ezScrollerDeps: {
+		src: [
+			'base:all',
+			'fn.rand', 'fn.formatDecimal', 'fn.request', 'fn.interpolate', 'fn.iosVersion',
+			'Element', 'ElementalData'
+		]
+		,srcStart: ["src/wraps/wrap-start.js","src/bglib.js","src/modules/Polyfills.js"]
+		,srcEnd: ["src/wraps/wrap-end.js"]
+		,dest: "dist/bglib-ezscroller-deps.js"
+	}
 	// ,customBuild: {
 	// 	src: [/* deps go here */]
 	// 	,srcStart: ["src/wraps/wrap-start.js","src/bglib.js","src/modules/Polyfills.js"]

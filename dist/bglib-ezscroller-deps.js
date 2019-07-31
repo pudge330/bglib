@@ -1,34 +1,15 @@
-/*! @license
- *
- * jLyte - bglib v1.0
- * https://github.com/pudge330/bglib
- *
- * Copyright 2019
- * Released under the MIT license
- * https://github.com/pudge330/bglib/blob/master/LICENSE
- */
-
 (function (root, factory) {
-	var jLyte_ExportLib = root.jLyte_ExportLib !== 'undefined' && root.jLyte_ExportLib;
     if (typeof define === 'function' && define.amd) {
         define([], factory);
     } else if (typeof module === 'object' && module.exports) {
         module.exports = factory();
     } else {
-        var oldJLyte = root.jLyte;
-        var lib = root.jLyte = factory();
+    	var oldObject = root.bglib;
+        var lib = root.bglib = factory();
         lib.noConflict = function() {
-            root.jLyte = oldJLyte;
-            return lib;
+        	root.bglib = oldObject;
+        	return lib;
         };
-        if (jLyte_ExportLib) {
-            var oldBglib = root.bglib;
-            var baseLib = root.bglib = lib.jLyte.bglib();
-            baseLib.noConflict = function() {
-                root.bglib = oldBglib;
-                return baseLib;
-            };
-        }
     }
 }(window, function () {
 var jQuery = window.jQuery !== 'undefined' ? window.jQuery : null;
@@ -381,6 +362,7 @@ bglib.create = function(p, s, t) {
         return _bglib.modules[t].extend(p, s);
     }
 };
+bglib.noop = function() {};
 bglib.setRegisteredModule = function(n, m) {
     _bglib.modules[n] = m;
 };
@@ -461,14 +443,64 @@ bglib.setRegisteredModule = function(n, m) {
         }
     }
 })("documentReady", bglib.fn);
-bglib.fn.toCamelCase = function(str) {
-    var parts = str.split('-');
-    var final = parts.shift();
-    while (parts.length) {
-        final += parts[0].uppercaseFirst();
-        parts.shift();
+bglib.fn.formatDecimal = function(amount, pos) {
+    pos = pos || 2;
+    if(!amount || amount === '0'){
+        amount = 0;
     }
-    return final;
+    if(typeof amount === 'string'){
+        amount = amount.replace(/[^\d\.]/g, '');
+    }
+    //-@ http://stackoverflow.com/a/6134070
+    return parseFloat(Math.round(amount * 100) / 100).toFixed(pos);
+};
+bglib.fn.interpolate = function(tpl, data) {
+    for (var key in data) {
+        tpl = tpl.replace(new RegExp('{{' + key + '}}', 'gm'), data[key]);
+    }
+    return tpl;
+};
+bglib.fn.iosVersion = function(max) {
+    //--@ https://stackoverflow.com/questions/8348139/detect-ios-version-less-than-5-with-javascript
+	if (/iP(hone|od|ad)/.test(navigator.platform)) {
+		// supports iOS 2.0 and later: <http://bit.ly/TJjs1V>
+		var v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+		return [parseInt(v[1], 10), parseInt(v[2], 10), parseInt(v[3] || 0, 10)];
+	}
+	else {
+		return null;
+	}
+};
+bglib.fn.rand = function(max) {
+    max = max || 100000000;
+    return Math.floor((Math.random() * max) + 1);
+};
+bglib.fn.request = function(url, cb, data, type) {
+    data = data || {};
+    type = type || 'GET';
+    var sendData = (type !== 'GET');
+    cb = cb || bglib.noop;
+    cb = bglib.DT.isFunction(cb)
+        ? {success: cb, error: bglib.noop}
+        : Object.assign({success: bglib.noop, error: bglib.noop}, cb)
+    ;
+    var xhr = new XMLHttpRequest();
+    xhr.open(type, url, true);
+    xhr.addEventListener("readystatechange", function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            cb.success(xhr.responseText, xhr, data);
+        }
+        else {
+            cb.error(xhr.responseText, xhr, data);
+        }
+    }, false);
+    if (sendData) {
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(data));
+    }
+    else {
+        xhr.send();
+    }
 };
 (function(bglib) {
 	var module = function () {};
@@ -551,6 +583,44 @@ bglib.DT = {
 		return value instanceof Date;
 	}
 };
+(function(bglib) {
+	var m = function() {
+		this.storage = new WeakMap();
+	};
+	m.prototype.set = function (element, key, obj) {
+		if (!this.storage.has(element)) {
+			this.storage.set(element, new Map());
+		}
+		this.storage.get(element).set(key, obj);
+	};
+	m.prototype.get = function (element, key) {
+		return this.has(element, key) ? this.storage.get(element).get(key) : undefined;
+	};
+	m.prototype.has = function (element, key) {
+		return this.hasBase(element) ? this.storage.get(element).has(key) : false;
+	};
+	m.prototype.hasBase = function (element) {
+		return this.storage.has(element);
+	};
+	m.prototype.remove = function (element, key) {
+		var result = false;
+		if (this.has(element, key)) {
+			result = this.storage.get(element).delete(key);	
+		}
+		if (this.hasBase(element)) {
+			if (this.storage.get(element).size === 0) {
+				this.storage.delete(element);
+			}
+		}
+		return result;
+	};
+	m.prototype.reset = function(element) {
+		if (this.hasBase(element)) {
+			this.storage.delete(element);
+		}
+	};
+	bglib.ElementalData = m;
+})(bglib);
 (function(bglib) {
 	var BaseModule = bglib.BaseModule;
 	var module = BaseModule.extend({
@@ -805,250 +875,6 @@ bglib.EventUtil = {
     });
 })(bglib);
 (function(bglib) {
-	var BaseModule = bglib.BaseModule;
-	var Event = bglib.Event;
-	var module = BaseModule.extend({
-		__moduleEvents: undefined
-		,constructor: function() {
-			var _self = this;
-			_self.__moduleEvents = {};
-			BaseModule.apply(_self, arguments);
-		}
-		,on: function(/* names[, data, cb] */) {
-			var _self = this;
-            var names, data, callback;
-            var args = this.resolveArguments('on', arguments);
-            names = args[0]; data = args[1]; callback = args[2];
-            names = names != '' ? names.split(' ') : [];
-            for (var i = 0; i < names.length; i++) {
-            	var name  = names[i].trim();
-            	if (!this.__moduleEvents.hasOwnProperty(name)) {
-            		this.__moduleEvents[name] = {
-            			name: name
-            			,fn: function() {}
-            			,handlers: new Map()
-            			,data: new Map()
-            		};
-            		this.__moduleEvents[name].fn = (function(attached, evt) {
-                        attached.handlers.forEach(function (status, key) {
-                            if (evt.isPropagationStopped()) { return; }
-                            if (status) {
-                                var d = attached.data.get(key);
-                                d = d || {};
-                                var _evt = new Event(key.name, evt.getEventProps(), d);
-                                var cb = key.callback.bind(_self);
-                                cb(_evt);
-                                if (_evt.isPropagationStopped()) {
-                                    evt.stopPropagation();
-                                }
-                                if (_evt.isDefaultPrevented()) {
-                                	evt.preventDefault();
-                                }
-                            }
-                        });
-                        return evt.isDefaultPrevented();
-                    }).bind(this, this.__moduleEvents[name]);
-            	}
-            	var mapKey = {
-                    name: name
-                    ,callback: callback
-                };
-                this.__moduleEvents[name].handlers.set(mapKey, true);
-                this.__moduleEvents[name].data.set(mapKey, data);
-            }
-		}
-		,off: function(/* names[, cb, cache] */) {
-			var names, callback, cache;
-            var args = this.resolveArguments('off', arguments);
-            names = args[0]; callback = args[1], cache = args[2];
-            names = names != '' ? names.split(' ') : [];
-            for (var i = 0; i < names.length; i++) {
-            	var name = names[i];
-                var mapKey = {
-                    name: name
-                    ,callback: callback
-                };
-                var found;
-                this.__moduleEvents[name].handlers.forEach(function(value, key) {
-                    if (!found && (mapKey.name == key.name && mapKey.callback == key.callback)) {
-                        found = key;
-                    }
-                });
-                if (found) {
-                	if (cache) {
-                    	this.__moduleEvents[name].handlers.set(found, false);
-                    }
-                    else {
-                    	this.__moduleEvents[name].handlers.delete(found);
-                    	this.__moduleEvents[name].data.delete(found);
-                    }
-                }
-            }
-		}
-		,trigger: function(name, event) {
-			if (!(event instanceof Event)) {
-				event = new Event(name, event);
-			}
-			if (name in this.__moduleEvents) {
-				var cnf = this.__moduleEvents[name];
-				return cnf.fn(event);
-			}
-			return false;
-		}
-        ,hasHandlers: function(name) {
-            if (this.__moduleEvents.hasOwnProperty(name)) {
-                if (this.__moduleEvents[name].handlers.size) {
-                    return true;
-                }
-            }
-            return false;
-        }
-		,resolveArguments: function(type, arguments) {
-			var args = [].slice.call(arguments);
-            var names, data, callback, cache;
-            names = args.shift();
-            if (type === 'on') {
-                switch (args.length) {
-                    case 2:
-                        data = args[0];
-                        callback = args[1];
-                    break;
-                    case 1:
-                        if (bglib.DT.isFunction(args[0])) {
-                            callback = args[0];
-                        }
-                    break;
-                }
-            }
-            else {
-            	switch (args.length) {
-                    case 2:
-                        cache = args[0];
-                        callback = args[1];
-                    break;
-                    case 1:
-                        if (bglib.DT.isFunction(args[0])) {
-                            callback = args[0];
-                        }
-                    break;
-                }
-            	if (bglib.DT.isFunction(args[0])) {
-	                 callback = args[0];
-	            }
-            }
-            data = data || data;
-            callback = callback || function() {};
-            cache = typeof cache !== 'undefined' ? cache : false;
-            names = names.trim();
-            names = names ? names.replace(/(\s{2,})/, ' ') : '';
-            if (type === 'on') {
-                return [names, data, callback];
-            }
-            else {
-                return [names, callback, cache];
-            }
-		}
-	});
-	bglib.EventModule = module;
-	bglib.setRegisteredModule('Event', module);
-})(bglib);
-(function(bglib) {
-	//--add debounce/delay for certain events
-	var isLoaded = false, isReady = false;
-	if (document.readyState === 'complete') {
-		isLoaded = true;
-	}
-	else {
-		bglib.EventUtil.addHandler(window, 'load', function(e) {
-			isLoaded = true;
-		});
-	}
-	bglib.fn.documentReady(function(e) {
-		isReady = true;
-	});
-	var EventManager = bglib.EventManager;
-	var Event = bglib.Event;
-	var module = EventManager.extend({
-		isDocument: undefined
-		,isWindow: undefined
-		,init: function() {
-			EventManager.prototype.init.apply(this, arguments);
-			this.isWindow = (this.target === window);
-			this.isDocument = (this.target === document);
-		}
-		,on: function() {
-			var _self = this;
-			var names, selector, data, callback;
-            var args = this.resolveArguments('on', arguments);
-            names = args[0]; selector = args[1]; data = args[2]; callback = args[3];
-            var tmpNames = ' ' + names + ' ';
-            if (this.isWindow && isLoaded && tmpNames.indexOf(' load ') !== -1) {
-            	var evt = new Event('load', { target: _self.target }, data);
-            	callback(evt);
-            	names = (' ' + names + ' ').replace(' load ', '');
-            }
-            if (this.isDocument && isReady && tmpNames.indexOf(' ready ') !== -1) {
-            	var evt = new Event('ready', { target: _self.target }, data);
-            	callback(evt);
-            	names = (' ' + names + ' ').replace(' ready ', '');
-            }
-            //--the ready event is intended for the document
-            var tmpNames = ' ' + names + ' ';
-            if (this.isDocument && tmpNames.indexOf(' ready ') !== -1) {
-            	bglib.fn.documentReady((function(data, callback, e) {
-					var evt = new Event('ready', { target: _self.target }, data, e);
-            		callback(evt);
-				}).bind(_self, data, callback));
-				names = (' ' + names + ' ').replace(' ready ', '');
-            }
-            args[0] = names;
-			EventManager.prototype.on.apply(this, args);
-		}
-	});
-	bglib.DomEvents = {
-		window: new module(window)
-		,document: new module(document)
-	};
-})(bglib);
-(function(bglib) {
-	var m = function() {
-		this.storage = new WeakMap();
-	};
-	m.prototype.set = function (element, key, obj) {
-		if (!this.storage.has(element)) {
-			this.storage.set(element, new Map());
-		}
-		this.storage.get(element).set(key, obj);
-	};
-	m.prototype.get = function (element, key) {
-		return this.has(element, key) ? this.storage.get(element).get(key) : undefined;
-	};
-	m.prototype.has = function (element, key) {
-		return this.hasBase(element) ? this.storage.get(element).has(key) : false;
-	};
-	m.prototype.hasBase = function (element) {
-		return this.storage.has(element);
-	};
-	m.prototype.remove = function (element, key) {
-		var result = false;
-		if (this.has(element, key)) {
-			result = this.storage.get(element).delete(key);	
-		}
-		if (this.hasBase(element)) {
-			if (this.storage.get(element).size === 0) {
-				this.storage.delete(element);
-			}
-		}
-		return result;
-	};
-	m.prototype.reset = function(element) {
-		if (this.hasBase(element)) {
-			this.storage.delete(element);
-		}
-	};
-	bglib.ElementalData = m;
-})(bglib);
-(function(bglib) {
 	var EventManager = bglib.EventManager;
 	var elData = new bglib.ElementalData();
 	var elEventMap = new WeakMap();
@@ -1286,468 +1112,4 @@ bglib.EventUtil = {
 	};
 	bglib.El = m;
 })(bglib);
-(function(bglib) {
-	var _hasLoaded = false;
-	var _onloadCallbacks = [];
-	bglib.DomEvents.document.on('ready', function() {
-		for (var i = 0; i < _onloadCallbacks.length; i++) {
-			(_onloadCallbacks[i])();
-		}
-		_onloadCallbacks = [];
-		_hasLoaded = true;
-	});
-	var module = function (arg, init) {
-		//--if function handle as onload event
-		if (bglib.DT.isFunction(arg)) {
-			if (_hasLoaded) {
-				arg();
-			}
-			else {
-				_onloadCallbacks.push(arg);
-			}
-			return;
-		}
-		if (init) {
-			if (!bglib.DT.isArray(arg) && !bglib.DT.isString(arg)) {
-				arg = [arg];
-			}
-			var elements = bglib.El.elements(arg);
-			for (var i = 0; i < elements.length; i++) {
-				this[i] = elements[i];
-			}
-			this.length = elements.length;
-			//--load data- attributes
-			for (var i = 0; i < this.length; i++) {
-				if (this[i].nodeType != 3) {
-                    var attrs = bglib.El.getAttributes(this[i]);
-                    for (var attrKey in attrs) {
-                        if (attrs.hasOwnProperty(attrKey)) {
-                            if (attrKey.match(/^data-/)) {
-                                var key = attrKey.replace(/^data-/, '');
-                                key = bglib.fn.toCamelCase(key);
-                                bglib.El.data.set(this[i], key, attrs[attrKey]);
-                            }
-                        }
-                    }
-                }
-			}
-		}
-		else {
-			return new module(arg, true);
-		}
-	};
-
-	module.prototype.each = function(cb) {
-		var _self = this;
-		for (var i = 0; i < _self.length; i++) {
-			var tmp = cb.bind(_self[i]);
-			tmp(i, _self[i]);
-		}
-		return this;
-	};	
-
-	module.prototype.toArray = function() {
-		var arr = [];
-		for (var i = 0; i < this.length; i++) {
-			arr.push(this[i]);
-		}
-		return arr;
-	};
-
-	module.prototype.addClass = function(cls) {
-		for (var i = 0; i < this.length; i++) {
-			bglib.El.addClass(this[i], cls);
-		}
-		return this;
-	};
-
-	module.prototype.removeClass = function(cls) {
-		for (var i = 0; i < this.length; i++) {
-			bglib.El.removeClass(this[i], cls);
-		}
-		return this;
-	};
-
-	module.prototype.toggleClass = function(cls) {
-		for (var i = 0; i < this.length; i++) {
-			bglib.El.toggleClass(this[i], cls);
-		}
-		return this;
-	};
-
-	module.prototype.hasClass = function(cls) {
-		var hasClass = true;
-		for (var i = 0; i < this.length; i++) {
-			if (!bglib.El.hasClass(this[i], cls)) {
-				hasClass = false;
-				i = this.length;
-			}
-		}
-		return hasClass;
-	};
-
-	module.prototype.find = function(sel) {
-		var elms = [];
-		this.each(function() {
-			elms = elms.concatUnique(Array.prototype.slice.call(this.querySelectorAll(sel)));
-		});
-		return module(elms);
-	};
-
-	module.prototype.parent = function() {
-		var parents = [];
-		this.each(function() {
-			parents = parents.concatUnique([this.parentElement]);
-		});
-		return module(parents);
-	};
-
-	module.prototype.children = function() {
-		var children = [];
-		this.each(function() {
-			children = children.concatUnique(this.childNodes);
-		});
-		return module(children);
-	};
-
-	module.prototype.attr = function(k, v) {
-		if (arguments.length > 1) {
-			this.each(function() {
-				this.setAttribute(k, v);
-			});
-			return this;
-		}
-		else {
-			var val;
-			if (this.length) {
-				val = this[0].getAttribute(k);
-			}
-			return val;
-		}
-	};
-
-	module.prototype.removeAttr = function(k) {
-		this.each(function() {
-			this.removeAttribute(k);
-		});
-		return this;
-	};
-
-	module.prototype.data = function(key, value) {
-    	if (arguments.length > 1) {
-    		this.each(function() {
-    			bglib.El.data.set(this, key, value);
-    		});
-    		return this;
-    	}
-    	else {
-    		var val;
-			if (this.length) {
-				val = bglib.El.data.get(this[0], key);
-			}
-    		return val;
-    	}
-    };
-
-    module.prototype.removeData = function(k) {
-    	this.each(function() {
-			bglib.El.data.remove(this, key);
-		});
-		return this;
-    };
-
-    module.prototype.closest = function(sel) {
-    	var parents = [];
-    	this.each(function() {
-	    	var tmp = this.closest(sel);
-	    	if (tmp) {
-	    		if (parents.indexOf(tmp) === -1) {
-	    			parents.pushUnique(tmp);
-	    		}
-	    	}
-    	});
-    	return module(parents);
-    };
-
-    module.prototype.remove = function() {
-    	this.each(function() {
-    		bglib.El.data.remove(this);
-    		bglib.El.remove(this);
-    	});
-    	this.length = 0;
-    	return this;
-    };
-
-    module.prototype.css = function(attr, value) {
-    	if (arguments.length > 1) {
-    		this.each(function() {
-    			bglib.El.css(this, attr, value);
-    		});
-    		return this;
-    	}
-    	else {
-    		if (bglib.DT.isObject(attr)) {
-    			for (var key in attr) {
-    				if (attr.hasOwnProperty(key)) {
-    					this.css(key, attr[key]);
-    				}
-    			}
-    			return this;
-    		}
-    		var val = undefined;
-    		if (this.length) {
-    			val = bglib.El.css(this[0], attr);
-    		}
-    		return val;
-    	}
-    };
-
-    module.prototype.on = function(/* names[, selector, data, cb] */) {
-    	var args = [].slice.call(arguments);
-        args.unshift(null);
-        this.each(function() {
-            args[0] = this;
-            bglib.El.on.apply(null, args);
-        });
-	};
-
-    module.prototype.off = function(/* names[, selector, cb] */) {
-        var args = [].slice.call(arguments);
-        args.unshift(null);
-        this.each(function() {
-            args[0] = this;
-            bglib.El.off.apply(null, args);
-        });
-    };
-
-    module.prototype.val = function(value) {
-    	if (typeof value === 'undefined') {
-    		var val;
-    		if (this.length) {
-    			val = this[0].value;
-    		}
-    		return val;
-    	}
-    	else {
-    		this.each(function() {
-    			this.value = value;
-    		});
-    		return this;
-    	}
-    };
-
-    module.prototype.append = function() {
-    	for (var i = 0; i < arguments.length; i++) {
-    		var arg = arguments[i];
-    		var _this = this;
-    		this.each(function() {
-    			if (!bglib.DT.isArray(arg) && !(arg instanceof NodeList)) {
-    				if (arg instanceof module) {
-    					arg = arg.toArray();
-    				}
-    				else {
-    					arg = [arg];
-    				}
-    			}
-    			for (var j = 0; j < arg.length; j++) {
-    				var nodes = bglib.El.elements(arg[j]);
-    				for (var nc = 0; nc < nodes.length; nc++) {
-    					if (this != nodes[nc]) {
-                            this.appendChild(nodes[nc]);
-                        }
-    				}
-    			}
-    		});
-    	}
-    };
-
-    module.prototype.prepend = function() {
-    	var args = [].slice.call(arguments).reverse();
-    	for (var i = 0; i < args.length; i++) {
-    		var arg = args[i];
-    		var _this = this;
-    		if (!bglib.DT.isArray(arg) && !(arg instanceof NodeList)) {
-				if (arg instanceof module) {
-					arg = arg.toArray();
-				}
-				else {
-					arg = [arg];
-				}
-			}
-    		arg = arg.reverse();
-    		this.each(function() {
-    			for (var j = 0; j < arg.length; j++) {
-    				//--needs to check if not function for newer jquery compliance, same with append
-    				var nodes = bglib.El.elements(arg[j]);
-    				for (var nc = nodes.length - 1; nc >= 0; nc--) {
-    					this.prepend(nodes[nc]);
-    				}
-    			}
-    		});
-    	}
-    };
-
-    module.prototype.appendTo = function(target) {
-    	target = bglib.El.elements(target);
-    	for (var i = 0; i < target.length; i++) {
-    		this.each(function() {
-    			target[i].appendChild(this);
-    		});
-    	}
-    };
-
-    module.prototype.prependTo = function(target) {
-    	target = bglib.El.elements(target);
-    	for (var i = 0; i < target.length; i++) {
-    		this.each(function() {
-    			target[i].prepend(this);
-    		});
-    	}
-    };
-
-    module.prototype.insertBefore = function(target) {
-    	target = bglib.El.elements(target);
-    	for (var i = 0; i < target.length; i++) {
-    		this.each(function() {
-    			target[i].parentElement.insertBefore(this, target[i]);
-    		});
-    	}
-    };
-
-    module.prototype.insertAfter = function(target) {
-    	target = bglib.El.elements(target);
-    	for (var i = 0; i < target.length; i++) {
-    		this.each(function() {
-    			var nextNode = target[i].nextSibling;
-    			if (nextNode) {
-    				target[i].parentElement.insertBefore(this, nextNode);
-    			}
-    			else {
-    				target[i].parentElement.appendChild(this);
-    			}
-    		});
-    	}
-    };
-
-    module.prototype.html = function(html) {
-    	if (typeof html === 'undefined') {
-    		var val;
-    		if (this.length) {
-    			val = this[0].innerHTML;
-    		}
-    		return val;
-    	}
-    	else {
-    		this.each(function() {
-                if (bglib.DT.isObject(html)) {
-    			    this.innerHTML = '';
-                    var elements = bglib.El.elements(html);
-                    for (var i = 0; i < elements.length; i++) {
-                        this.appendChild(elements[i]);
-                    }
-                }
-                else {
-                    this.innerHTML = html;
-                }
-    		});
-    		return this;
-    	}
-    };
-
-    module.prototype.outerHtml = function() {
-        var val;
-        if (this.length) {
-            val = this[0].outerHtml;
-        }
-        return val;
-    };
-
-    module.prototype.text = function(text) {
-        if (typeof text === 'undefined') {
-            var val;
-            if (this.length) {
-                val = bglib.El.text(this[0]);
-                val = val.replace(/\r\n|\n/g, ' ').replace(/ +(?= )/g, '');
-            }
-            return val;
-        }
-        else {
-            this.each(function() {
-                this.innerHTML = bglib.fn.htmlEntities(text);
-            });
-            return this;
-        }
-    };
-
-    module.prototype.val = function(value) {
-        if (typeof value === 'undefined') {
-            var val;
-            if (this.length) {
-                val = this[0].value;
-                //--need to handle selects (single + multiple[])
-            }
-            return val;
-        }
-        else {
-            value = bglib.DT.isArray(value) ? value : [value];
-            this.each(function() {
-                var $this = jLyte(this);
-                var tagName = this.tagName.toLowerCase();
-                if (tagName === 'select') {
-                    value = this.multiple && value.length ? [value.pop()] : value;
-                    $this.find('option').each(function() {
-                        this.selected = "false";
-                        if (this.value && value.indexOf(this.value) !== -1) {
-                            this.selected = "true";
-                        }
-                    });
-                }
-                else if (tagName === 'input') {
-                    var type = this.type;
-                    if (['checkbox', 'radio'].indexOf(type) !== -1) {
-                        this.checked = false;
-                        if (this.value && value.indexOf(this.value) !== -1) {
-                            this.checked = true;
-                        }
-                    }
-                    else {
-                        this.value = value[0];
-                    }
-                }
-                else {
-                    this.value = value[0];
-                }
-            });
-            return this;
-        }
-    };
-
-    //--static
-    module.each = function(data, handler) {
-    	if (data instanceof module) {
-    		data.each(function(i, el) {
-    			handler(i, jLyte(el));
-    		});
-    	}
-    	else if (bglib.DT.isObject(data)) {
-    		var index = -1;
-    		for (var key in data) {
-    			if (data.hasOwnProperty(key)) {
-    				index++;
-    				handler(key, data[key], index);
-    			}
-    		}
-    	}
-    	else {
-    		for (var i = 0; i < data.length; i++) {
-    			handler(i, data[i]);
-    		}
-    	}
-    };
-
-	bglib.jLyte = module;
-})(bglib);
-bglib.jLyte.bglib = function() {
-	return bglib;
-};
-return bglib.jLyte;}));
+return bglib;}));
