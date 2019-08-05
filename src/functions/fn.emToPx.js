@@ -4,8 +4,7 @@ bglib.fn.toEm = function(val, scope) {
 	var test = document.createElement('div');
 	test.innerHTML = '&nbsp;';
 	bglib.El.css(test, {
-		"display": 'none'
-		,"font-size": '1em'
+		"font-size": '1em'
 		,"margin": 0
 		,"padding": 0
 		,"height": 'auto'
@@ -23,8 +22,7 @@ bglib.fn.toPx = function(val, scope) {
 	var test = document.createElement('div');
 	test.innerHTML = '&nbsp;';
 	bglib.El.css(test, {
-		"display": 'none'
-		,"font-size": '1em'
+		"font-size": '1em'
 		,"margin": 0
 		,"padding": 0
 		,"height": 'auto'
