@@ -1,4 +1,4 @@
-bglib.fn.iosVersion = function(max) {
+bglib.fn.iosVersion = function() {
     //--@ https://stackoverflow.com/questions/8348139/detect-ios-version-less-than-5-with-javascript
 	if (/iP(hone|od|ad)/.test(navigator.platform)) {
 		// supports iOS 2.0 and later: <http://bit.ly/TJjs1V>

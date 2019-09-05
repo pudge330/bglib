@@ -14,7 +14,7 @@
 	,"mod:all": {
 		"src": null
 		,"deps": [
-			"AppRouter", "BaseModule", "DatasetModule", "DataType", "DomEvents", "Element", "ElementalData", "Event", "EventManager", "EventModule", "EventUtil", "JLyte", "JSCookie", "Storage", "TagLoader", "Timeout", "UrlParser", "UserAutoExpire", "Webify"
+			"AppRouter", "BaseModule", "DatasetModule", "DataType", "DomEvents", "Element", "ElementalData", "Event", "EventManager", "EventModule", "EventUtil", "Storage", "TagLoader", "Timeout", "UrlParser", "UserAutoExpire", "Webify"
 		]
 	}
 	,"base.create": {
