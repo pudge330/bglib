@@ -8,7 +8,7 @@
 	,"fn:all": {
 		"src": null
 		,"deps": [
-			"fn.debounce", "fn.documentReady", "fn.emToPx", "fn.formatDecimal", "fn.formatPrice", "fn.htmlEntities", "fn.interpolate", "fn.iosVersion", "fn.rand", "fn.request", "fn.toCamelCase", "fn.toProperCase"
+			"fn.debounce", "fn.documentReady", "fn.emToPx", "fn.formatDecimal", "fn.formatPrice", "fn.htmlEntities", "fn.interpolate", "fn.iosVersion", "fn.rand", "fn.renderTemplate", "fn.request", "fn.toCamelCase", "fn.toProperCase"
 		]
 	}
 	,"mod:all": {
@@ -69,6 +69,10 @@
 	}
 	,"fn.rand": {
 		"src": "src/functions/fn.rand.js"
+		,"deps": []
+	}
+	,"fn.renderTemplate": {
+		"src": "src/functions/fn.renderTemplate.js"
 		,"deps": []
 	}
 	,"fn.request": {
