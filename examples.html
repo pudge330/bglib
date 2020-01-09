@@ -31,21 +31,21 @@
 </ul>
 <script>
 	//--jLyte test
-	var jLyte = bglib.jLyte;
-	var $elms = jLyte('ul');
-	$elms.addClass('yo-yo-blu');
-	$elms.addClass('yo-yo-blu-light-2x');
-	$elms.each(function(i) {
-		var $el = jLyte(this);
-		$el.addClass('ul-list-' + (i + 1));
-		var $items = $el.find('li');
-		$items.addClass('list-item-ul' + i);
-		$items.each(function(j) {
-			var $this = jLyte(this);
-			$this.addClass('list-item-ul' + i + '-' + j);
-		});
-		$el.css('background-color', 'red');
-	});
+	// var jLyte = bglib.jLyte;
+	// var $elms = jLyte('ul');
+	// $elms.addClass('yo-yo-blu');
+	// $elms.addClass('yo-yo-blu-light-2x');
+	// $elms.each(function(i) {
+	// 	var $el = jLyte(this);
+	// 	$el.addClass('ul-list-' + (i + 1));
+	// 	var $items = $el.find('li');
+	// 	$items.addClass('list-item-ul' + i);
+	// 	$items.each(function(j) {
+	// 		var $this = jLyte(this);
+	// 		$this.addClass('list-item-ul' + i + '-' + j);
+	// 	});
+	// 	$el.css('background-color', 'red');
+	// });
 
 	// //--AppRouter test
 	// var _routes = {
@@ -181,25 +181,25 @@
 
 	// var 
 
-	var $el = jLyte('[data-foo-attr="im here"]');
-	$el.on('mouseover', {foo: 'baz'}, function(evt) {
-		console.log(['mouse over A', this, evt]);
-	});
+	// var $el = jLyte('[data-foo-attr="im here"]');
+	// $el.on('mouseover', {foo: 'baz'}, function(evt) {
+	// 	console.log(['mouse over A', this, evt]);
+	// });
 
-	$el.on('mouseover', 'li:first-child', {el: $el, foo: 'bar'}, function(evt) {
-		console.log(['mouse over B', this, evt]);
-		// evt.stopPropagation();
-	});
+	// $el.on('mouseover', 'li:first-child', {el: $el, foo: 'bar'}, function(evt) {
+	// 	console.log(['mouse over B', this, evt]);
+	// 	// evt.stopPropagation();
+	// });
 
-	var cbC = function(evt) {
-		console.log(['mouse over C', this, evt]);
-	};
-	$el.on('mouseover', 'li:first-child', {name: 'brandon'}, cbC);
-	$el.off('mouseover', 'li:first-child', cbC);
+	// var cbC = function(evt) {
+	// 	console.log(['mouse over C', this, evt]);
+	// };
+	// $el.on('mouseover', 'li:first-child', {name: 'brandon'}, cbC);
+	// $el.off('mouseover', 'li:first-child', cbC);
 
-	bglib.DomEvents.window.on('load', function() {
-		console.log('window loaded 2');
-	});
+	// bglib.DomEvents.window.on('load', function() {
+	// 	console.log('window loaded 2');
+	// });
 
 	// var el = document.querySelector('[data-foo-attr="im here"]');
 	// var $el = jLyte(el);
@@ -219,6 +219,53 @@
 	// em.on('mouseover', 'li:first-child', cbC);
 	// em.off('mouseover', 'li:first-child', cbC);
 
+</script>
+<script type="text/javascript">
+	window.addEventListener('load', function() {
+		
+
+		var tpl = document.getElementById('template').innerHTML;
+		var compiled = bglib.fn.compileTemplate(tpl);
+		// console.log(tpl);
+		// console.log(compiled);
+
+		document.querySelector('body').innerHTML = bglib.fn.htmlEntities(compiled).replace(/\r\n/g, "\n").replace(/\n/g, "\n<br />");
+
+	});
+
+</script>
+<script type="text/template" id="template">
+<% for (var i = 0; i < this.items.length; i++) { %>
+	<li class="todo-item">
+		<div class="todo-item-title"><h3><input type="checkbox" class="cs-checkbox"> {{{this.items[i].name}}}</h3></div>
+		<* this is a comment *>
+		<*
+			this
+			is
+			a
+			multip
+			line
+			comment
+		*>
+		<% if (this.items[i].description) { %>
+			<% var desc = this.items[i].description.replace(/\n/g, '<br />').replace(/\.[^]+/gm, '…'); %>
+			<div class="todo-item-description"><p class="clear-mbottom">{{desc}}</p></div>
+		<% } %>
+	</li>
+<% } %>
+<%
+var someNewVariable = '';
+%>
+<%
+var anotherOne = [
+	"only",
+	"this",
+	"one",
+	"is",
+	"an",
+	"array"
+];
+%>
 </script>
 </body>
 </html>
