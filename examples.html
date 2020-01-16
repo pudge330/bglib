@@ -223,6 +223,26 @@
 <script type="text/javascript">
 	window.addEventListener('load', function() {
 		
+		var Person = bglib.create({
+			firstName: undefined,
+			lastName: undefined,
+			constructor: function(fn, ln) {
+				//--call parent constructor
+				Person.__parent.apply(self, arguments);
+				this.firstName = fn;
+				this.lastName = ln;
+			},
+			fullName: function() {
+				return this.firstName + ' ' + this.lastName;
+			}
+		});
+
+		var p1 = new Person('John', 'Doe');
+
+		console.log(p1.fullName()); //--John Doe
+
+		return;
+
 
 		var tpl = document.getElementById('template').innerHTML;
 		var compiled = bglib.fn.compileTemplate(tpl);

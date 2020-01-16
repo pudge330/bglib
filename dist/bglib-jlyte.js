@@ -325,8 +325,7 @@ if (!Object.prototype.unwatch) {
 }
 //--JSON
 if (!JSON.safeParse) {
-	JSON.safeParse = function(_json, _d) {
-		_d = typeof _d !== 'undefined' ? _d : null;
+	JSON.safeParse = function(_json) {
 		if (_json === null) { return null; }
 		try {
 			_json = JSON.parse(_json);
