@@ -218,11 +218,21 @@
 	// };
 	// em.on('mouseover', 'li:first-child', cbC);
 	// em.off('mouseover', 'li:first-child', cbC);
-
 </script>
+<p class="element" style="font-size: 10px;">Some element</p>
 <script type="text/javascript">
 	window.addEventListener('load', function() {
 		
+		console.log(bglib.fn.toEm('44px'));
+
+		console.log(bglib.fn.toPx('2.75em'));
+
+		var e = document.querySelector('.element');
+
+		console.log(bglib.fn.toPx('2.5em', e));
+
+		return;
+
 		var Person = bglib.create({
 			firstName: undefined,
 			lastName: undefined,

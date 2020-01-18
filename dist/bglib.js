@@ -489,7 +489,7 @@ bglib.fn.toEm = function(val, scope) {
 	scope.appendChild(test);
 	var testVal = parseFloat(bglib.El.css(test, 'height'));
 	bglib.El.remove(test);
-	return (val / testVal).toFixed(8) + 'em';
+	return ((val / testVal).toFixed(8) + '').replace(/0+$/, '').replace(/\.$/, '') + 'em';
 };
 bglib.fn.toPx = function(val, scope) {
 	scope = scope || document.querySelector('body');
@@ -507,7 +507,7 @@ bglib.fn.toPx = function(val, scope) {
 	scope.appendChild(test);
 	var testVal = parseFloat(bglib.El.css(test, 'height'));
 	bglib.El.remove(test);
-	return Math.round(val * testVal) + 'px';
+	return (Math.round(val * testVal) + '') + 'px';
 };
 bglib.fn.formatDecimal = function(amount, pos) {
     pos = pos || 2;
