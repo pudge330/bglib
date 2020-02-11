@@ -49,7 +49,8 @@ bglib.fn.renderTemplate = function(tpl, data) {
 		data = data || {};
 	tpl = tpl.match(/^var __bglib_template__ = \'/) ? tpl : bglib.fn.compileTemplate(tpl);
 	return function() {
-		return eval(tpl);
+		eval(tpl);
+		return __bglib_template__;
 	}.call(data);
 };
 bglib.fn.renderTemplate.helpers = {};
