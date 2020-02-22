@@ -575,6 +575,9 @@ bglib.fn.compileTemplate = function(tpl) {
 		jsTokens.push([token, match[2].trim()]);
 		tpl = tpl.replace(/(\<\%(.*|[\s\S]+?)\%\>?)/, token);
 	}
+	//--handle \' and '
+	tpl = tpl.replace(/\\\'/g, "\\\\\'");
+	tpl = tpl.replace(/\'/g, "\\\'");
 	//--single-line tokens and comment tokens
 	tpl = tpl.replace(/\{\{\{/g, "' + helpers.htmlEntities(");
 	tpl = tpl.replace(/\}\}\}/g, ") + '");
@@ -602,6 +605,11 @@ bglib.fn.compileTemplate = function(tpl) {
 	for (var i = 0; i < jsTokens.length; i++) {
 		tpl = tpl.replace(jsTokens[i][0], "'; " + jsTokens[i][1] + "  __bglib_template__ += '");
 	}
+	/*
+		Out put data keys as local varaible for eval()
+
+			This should allow {{variableName}} as opposed to {{this.variableName}}
+	*/
 	//--empty concatenation
 	tpl = tpl.replace(/__bglib_template__ \+\= '';/gm, '');
 	tpl = tpl.replace(/__bglib_template__ \+\= '\s+';/gm, '');

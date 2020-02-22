@@ -234,6 +234,17 @@
 			]
 		}));
 
+		var o1 = {
+			items: [
+				{
+					name: 'Item 1',
+					description: 'Ipsum...'
+				}
+			]
+		};
+
+		console.log(Object.keys(o1));
+
 		console.log(bglib.fn.renderTemplate('Using the {{{this.element}}}.', {
 		    element: '<p>'
 		}));
@@ -282,7 +293,7 @@
 <script type="text/template" id="template">
 <% for (var i = 0; i < this.items.length; i++) { %>
 	<li class="todo-item">
-		<div class="todo-item-title"><h3><input type="checkbox" class="cs-checkbox"> {{{this.items[i].name}}}</h3></div>
+		<div class='todo-item-title'><h3><input type="checkbox" class="cs-checkbox"> {{{this.items[i].name}}}</h3></div>
 		<* this is a comment *>
 		<*
 			this
