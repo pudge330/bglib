@@ -243,11 +243,18 @@
 			]
 		};
 
-		console.log(Object.keys(o1));
+		// console.log(bglib.fn.compileTemplate(tpl));
 
-		console.log(bglib.fn.renderTemplate('Using the {{{this.element}}}.', {
-		    element: '<p>'
-		}));
+		// for (item in o1.items) {
+		for (var itemIndex = 0; itemIndex < o1.items.length; itemIndex++) { var item = o1.items[itemIndex];
+			// console.log(item);
+		}
+
+		// console.log(Object.keys(o1));
+
+		// console.log(bglib.fn.renderTemplate('Using the {{{this.element}}}.', {
+		//     element: '<p>'
+		// }));
 
 		// console.log(bglib.fn.toEm('44px'));
 
@@ -282,6 +289,7 @@
 
 		var tpl = document.getElementById('template').innerHTML;
 		var compiled = bglib.fn.compileTemplate(tpl);
+
 		// console.log(tpl);
 		// console.log(compiled);
 
@@ -291,9 +299,9 @@
 
 </script>
 <script type="text/template" id="template">
-<% for (var i = 0; i < this.items.length; i++) { %>
+<% for (item in items) { %>
 	<li class="todo-item">
-		<div class='todo-item-title'><h3><input type="checkbox" class="cs-checkbox"> {{{this.items[i].name}}}</h3></div>
+		<div class='todo-item-title'><h3><input type="checkbox" class="cs-checkbox"> {{{item.name}}}</h3></div>
 		<* this is a comment *>
 		<*
 			this
@@ -303,8 +311,8 @@
 			line
 			comment
 		*>
-		<% if (this.items[i].description) { %>
-			<% var desc = this.items[i].description.replace(/\n/g, '<br />').replace(/\.[^]+/gm, '…'); %>
+		<% if (item.description) { %>
+			<% var desc = item.description.replace(/\n/g, '<br />').replace(/\.[^]+/gm, '…'); %>
 			<div class="todo-item-description"><p class="clear-mbottom">{{desc}}</p></div>
 		<% } %>
 	</li>
