@@ -29,6 +29,52 @@
 	<li>List Item 3</li>
 	<li>List Item 4</li>
 </ul>
+<script type="text/javascript">
+	var Person = bglib.BaseModule.extend({
+	    firstName: undefined,
+	    lastName: undefined,
+	    constructor: function() {
+	    	//--call parent constructor method
+	    	Person.__parent.apply(this, arguments);
+	    },
+	    init: function(fn, ln) {
+			//--call parent init method
+			// console.log(Person.__parent.prototype);
+			// Person.__parent.prototype.init.apply(this, arguments);
+			this.firstName = fn;
+			this.lastName = ln;
+		},
+	    getFirstName: function() {
+	        return this.firstName;
+	    },
+	    getLastName: function() {
+	        return this.lastName;
+	    },
+	    getName: function() {
+	        return this.getFirstName();
+	    }
+	});
+
+	var PersonX = Person.extend({
+		age: undefined,
+		init: function(fn, ln, age) {
+			//--call parent init method
+			PersonX.__parent.prototype.init.apply(this, arguments);
+			this.age = age;
+		},
+		getAge: function() {
+			return this.age;
+		},
+		getName: function() {
+			var n = PersonX.__parent.prototype.getName.apply(this, arguments);
+			return n + ' ' + this.lastName;
+		}
+	});
+
+	var user = new PersonX('John', 'Doe');
+	
+	console.log(user.getName()); // 'John'
+</script>
 <script>
 	//--jLyte test
 	// var jLyte = bglib.jLyte;
@@ -221,81 +267,81 @@
 </script>
 <p class="element" style="font-size: 10px;">Some element</p>
 <script type="text/javascript">
-	window.addEventListener('load', function() {
+	// window.addEventListener('load', function() {
 		
-		var tpl = document.getElementById('template').innerHTML;
+	// 	var tpl = document.getElementById('template').innerHTML;
 
-		console.log(bglib.fn.renderTemplate(tpl, {
-			items: [
-				{
-					name: 'Item 1',
-					description: 'Ipsum...'
-				}
-			]
-		}));
+	// 	console.log(bglib.fn.renderTemplate(tpl, {
+	// 		items: [
+	// 			{
+	// 				name: 'Item 1',
+	// 				description: 'Ipsum...'
+	// 			}
+	// 		]
+	// 	}));
 
-		var o1 = {
-			items: [
-				{
-					name: 'Item 1',
-					description: 'Ipsum...'
-				}
-			]
-		};
+	// 	var o1 = {
+	// 		items: [
+	// 			{
+	// 				name: 'Item 1',
+	// 				description: 'Ipsum...'
+	// 			}
+	// 		]
+	// 	};
 
-		// console.log(bglib.fn.compileTemplate(tpl));
+	// 	// console.log(bglib.fn.compileTemplate(tpl));
 
-		// for (item in o1.items) {
-		for (var itemIndex = 0; itemIndex < o1.items.length; itemIndex++) { var item = o1.items[itemIndex];
-			// console.log(item);
-		}
+	// 	// for (item in o1.items) {
+	// 	for (var itemIndex = 0; itemIndex < o1.items.length; itemIndex++) { var item = o1.items[itemIndex];
+	// 		// console.log(item);
+	// 	}
 
-		// console.log(Object.keys(o1));
+	// 	// console.log(Object.keys(o1));
 
-		// console.log(bglib.fn.renderTemplate('Using the {{{this.element}}}.', {
-		//     element: '<p>'
-		// }));
+	// 	// console.log(bglib.fn.renderTemplate('Using the {{{this.element}}}.', {
+	// 	//     element: '<p>'
+	// 	// }));
 
-		// console.log(bglib.fn.toEm('44px'));
+	// 	// console.log(bglib.fn.toEm('44px'));
 
-		// console.log(bglib.fn.toPx('2.75em'));
+	// 	// console.log(bglib.fn.toPx('2.75em'));
 
-		// var e = document.querySelector('.element');
+	// 	// var e = document.querySelector('.element');
 
-		// console.log(bglib.fn.toPx('2.5em', e));
+	// 	// console.log(bglib.fn.toPx('2.5em', e));
 
-		return;
+	// 	return;
 
-		var Person = bglib.create({
-			firstName: undefined,
-			lastName: undefined,
-			constructor: function(fn, ln) {
-				//--call parent constructor
-				Person.__parent.apply(self, arguments);
-				this.firstName = fn;
-				this.lastName = ln;
-			},
-			fullName: function() {
-				return this.firstName + ' ' + this.lastName;
-			}
-		});
+	// 	var Person = bglib.create({
+	// 		firstName: undefined,
+	// 		lastName: undefined,
+	// 		constructor: function(fn, ln) {
+	// 			//--call parent constructor
+	// 			Person.__parent.apply(self, arguments);
+	// 			this.firstName = fn;
+	// 			this.lastName = ln;
+	// 		},
+	// 		fullName: function() {
+	// 			return this.firstName + ' ' + this.lastName;
+	// 		}
+	// 	});
 
-		var p1 = new Person('John', 'Doe');
+	// 	var p1 = new Person('John', 'Doe');
 
-		console.log(p1.fullName()); //--John Doe
+	// 	console.log(p1.fullName()); //--John Doe
 
-		return;
+	// 	return;
 
 
-		var tpl = document.getElementById('template').innerHTML;
-		var compiled = bglib.fn.compileTemplate(tpl);
+	// 	var tpl = document.getElementById('template').innerHTML;
+	// 	var compiled = bglib.fn.compileTemplate(tpl);
 
-		// console.log(tpl);
-		// console.log(compiled);
+	// 	// console.log(tpl);
+	// 	// console.log(compiled);
 
-		document.querySelector('body').innerHTML = bglib.fn.htmlEntities(compiled).replace(/\r\n/g, "\n").replace(/\n/g, "\n<br />");
+	// 	document.querySelector('body').innerHTML = bglib.fn.htmlEntities(compiled).replace(/\r\n/g, "\n").replace(/\n/g, "\n<br />");
 
-	});
+	// });
 
 </script>
 <script type="text/template" id="template">
