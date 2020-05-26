@@ -113,9 +113,9 @@
 			else if (['ends-with', 'ends', '$'].indexOf(type) !== 1)
 				return 'ends-with';
 			else if (['regex'].indexOf(type) !== 1)
-				return 'ends-with';
+				return 'regex';
 			else if (['function', 'func'].indexOf(type) !== 1)
-				return 'ends-with';
+				return 'function';
 			else
 				return 'equals';
 			//--todo: add 'regex' and 'func' type
