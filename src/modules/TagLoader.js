@@ -7,7 +7,7 @@ bglib.TagLoader = {
 	}
 	,getText: function(elm) {
 		var text = null;
-		if (typeof jQuery != 'undefined' && elm instanceof jQuery)
+		if (typeof jQuery !== 'undefined' && elm instanceof jQuery)
 			text = elm.text() || elm.html();
 		else if (isObject(elm))
 			text = elm.innerHTML;
@@ -20,7 +20,7 @@ bglib.TagLoader = {
 	}
 	,setText: function(elm, text, parent) {
 		text = this.applyWrap(text);
-		if (typeof jQuery != 'undefined' && elm instanceof jQuery)
+		if (typeof jQuery !== 'undefined' && elm instanceof jQuery)
 			elm.html(text);
 		else if (isObject(elm))
 			elm.innerHTML = text;
