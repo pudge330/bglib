@@ -12,4 +12,4 @@
         };
     }
 }(window, function () {
-var jQuery = window.jQuery !== 'undefined' ? window.jQuery : null;
+var jQuery = root.jQuery !== 'undefined' ? root.jQuery : null;
