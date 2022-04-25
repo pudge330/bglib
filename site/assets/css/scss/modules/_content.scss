@@ -1,0 +1,26 @@
+pre[class*="language-"] {
+	&.styled-code {
+		margin: 0 0 1rem 0;
+	}
+}
+
+.header-content {
+	border: 1px solid $color-gray-200;
+	padding: 0.5rem;
+}
+
+.sub-header {
+	margin-top: -0.5rem;
+}
+
+.arguments-table {
+	tbody {
+		tr {
+			td {
+				&:last-child {
+					width: 100%;
+				}
+			}
+		}
+	}
+}

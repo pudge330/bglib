@@ -1,0 +1,40 @@
+.side-menu, .content-directory {
+	a {
+		color: $color-gray-700;
+	}
+	.active-item {
+		a {
+			color: $color-primary;
+		}
+	}
+}
+
+.side-menu {
+	.accordion-button {
+		&:not(.collapsed) {
+			background-color: unset;
+		}
+		&:hover {
+			background-color: #e7f1ff;
+		}
+		&:focus {
+			box-shadow: none;
+		}
+	}
+	button {
+		&.current-group {
+			&.accordion-button {
+				color: $color-primary;
+			}
+		}
+	}
+}
+
+.content-directory {
+	a {
+		text-decoration: none;
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"require": {
+		"php": ">=7.0",
+		"lynkcms/core": "dev-master",
+		"lynkcms/components": "dev-master",
+		"symfony/var-dumper" : "3.*",
+		"symfony/yaml": "3.*",
+		"pimple/pimple": "3.*",
+		"erusev/parsedown": "^1.7"
+	},
+	"repositories": [
+		{
+			"type": "git",
+			"url":  "https://github.com/pudge330/LynkCMS-Core.git"
+		},
+		{
+			"type": "git",
+			"url":  "https://github.com/pudge330/LynkCMS-Components.git"
+		}
+	]
+}

@@ -1,0 +1,40 @@
+html, body, .page {
+	height: 100%;
+}
+
+.page-header {
+	background-color: #dc8168;
+	header {
+		> div {
+			font-size: 1.5rem;
+		}
+	}
+}
+
+.page-content {
+	max-width: 1400px;
+	width: 100%;
+	margin: auto;
+	.side-menu {
+		min-width: 250px;
+		border-right: 1px solid $color-gray-200;
+		.accordion-body {
+			padding: 0.5rem;
+		}
+		.nav-link {
+			padding: 0.25rem;
+		}
+	}
+	.content-wrap {
+		.content-body {
+			overflow-y: auto;
+		}
+		.content-directory {
+			min-width: 250px;
+		}
+	}
+}
+
+.page-footer {
+	background-color: $color-gray-100;
+}

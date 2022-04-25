@@ -1,0 +1,64 @@
+
+/*!
+ * Bootstrap-Plus (https://github.com/pudge330/bootstrap-plus)
+ * Copyright 2022 Brandon Garcia
+ * Licensed under MIT (https://github.com/pudge330/bootstrap-plus/blob/master/LICENSE)
+ */
+/*!
+ * Bootstrap v5.1.3 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+
+// Configuration
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/functions";
+@import "./config/bootstrap-variables"; // custom overrides
+@import "./config/bootstrap-colors"; // custom overrides
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/variables";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/mixins";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/utilities";
+
+// Layout & components
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/root";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/reboot";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/type";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/images";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/containers";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/grid";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/tables";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/forms";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/buttons";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/transitions";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/dropdown";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/button-group";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/nav";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/navbar";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/card";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/accordion";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/breadcrumb";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/pagination";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/badge";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/alert";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/progress";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/list-group";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/close";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/toasts";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/modal";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/tooltip";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/popover";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/carousel";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/spinners";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/offcanvas";
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/placeholders";
+
+// Helpers
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/helpers";
+
+// Utilities
+@import "../bootstrap-plus/src/bootstrap-5.1.3/scss/utilities/api";
+
+// Custom Modules
+@import "../bootstrap-plus/src/scss/modules/base";
+@import "../bootstrap-plus/src/scss/modules/buttons";
+@import "../bootstrap-plus/src/scss/modules/tables";

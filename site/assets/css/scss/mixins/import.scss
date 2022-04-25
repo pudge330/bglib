@@ -1,0 +1,46 @@
+//==fallbacks
+@mixin rem-fallback($attr, $size) {
+    #{$attr}: $size;
+    #{$attr}: calculate-rem($size);
+}
+
+@mixin px-fallback($attr, $size) {
+    #{$attr}: calculate-px($size);
+    #{$attr}: $size;
+}
+
+@mixin font-size($size) {
+    font-size: $size;
+    font-size: calculate-rem($size);
+}
+
+//==breakpoints and print media
+@mixin breakpoint($size) {
+    @media only screen and (min-width: get-breakpoint($size)) {
+        @content;
+    }
+}
+
+@mixin breakpoint-max($size) {
+    @media only screen and (max-width: get-breakpoint-max($size)) {
+        @content;
+    }
+}
+
+@mixin media-print() {
+    @media only print {
+        @content;
+    }
+}
+
+@mixin media-print-breakpoint($size) {
+    @media only print and (min-width: get-breakpoint($size)) {
+        @content;
+    }
+}
+
+@mixin media-print-breakpoint-max($size) {
+    @media only print and (max-width: get-breakpoint-max($size)) {
+        @content;
+    }
+}

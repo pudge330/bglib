@@ -1,0 +1,86 @@
+//==base
+@function parse-int($n) { 
+    @return $n / ($n * 0 + 1);
+}
+
+@function calculate-rem($size) {
+    $remSize: $size / $rem-basePx;
+    @return $remSize * 1rem;
+}
+
+@function calculate-px($size) {
+    $value: csParseInt($size) * $rem-basePx;
+    @return round($value);
+}
+
+//==breakpoints
+@function get-breakpoint($size) {
+    @if map-has-key($breakpoints, $size) {
+        @return map-get($breakpoints, $size);
+    }
+    @else {
+        @warn "Unknown breakpoint size `#{$size}` in $breakpoints, returned 1px instead";
+        @return '1px';
+    }
+}
+
+@function get-breakpoint-max($size) {
+    @if map-has-key($breakpoints-max, $size) {
+        @return map-get($breakpoints-max, $size);
+    }
+    @else {
+        @warn "Unknown breakpoint size `#{$size}` in $breakpoints-max, returned 1px instead";
+        @return '9999px';
+    }
+}
+
+//==fonts
+@function get-font($key) {
+    @if map-has-key($font-map, $key) {
+        @return map-get($font-map, $key);
+    }
+    @else {
+        @warn "Unknown `#{$key}` in $font-map, defaulting to `base`.";
+        @return map-get($font-map, "base");
+    }
+}
+
+//==colors
+@function get-gray-color($shade) {
+    @if map-has-key($colors-grays, $shade) {
+        @return map-get($colors-grays, $shade);
+    }
+    @warn "Unknown gray shade `#{$shade}` in $colors-grays";
+    @return null;
+}
+
+@function get-base-color($color) {
+    @if map-has-key($colors-base, $color) {
+        @return map-get($colors-base, $color);
+    }
+    @warn "Unknown color `#{$shade}` in $colors-base";
+    @return null;
+}
+
+@function get-theme-color($color) {
+    @if map-has-key($colors-theme, $color) {
+        @return map-get($colors-theme, $color);
+    }
+    @warn "Unknown color `#{$shade}` in $colors-theme";
+    @return null;
+}
+
+// Tint a color: mix a color with white
+@function tint-color($color, $weight) {
+  @return mix(white, $color, $weight);
+}
+
+// Shade a color: mix a color with black
+@function shade-color($color, $weight) {
+  @return mix(black, $color, $weight);
+}
+
+// Shade the color if the weight is positive, else tint it
+@function shift-color($color, $weight) {
+  @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+}

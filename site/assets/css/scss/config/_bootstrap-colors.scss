@@ -1,0 +1,55 @@
+// Override bootstrap colors or add new colors here
+
+@import './colors';
+
+// scss-docs-start gray-color-variables
+$white:    $color-white;
+$gray-100: $color-gray-100;
+$gray-200: $color-gray-200;
+$gray-300: $color-gray-300;
+$gray-400: $color-gray-400;
+$gray-500: $color-gray-500;
+$gray-600: $color-gray-600;
+$gray-700: $color-gray-700;
+$gray-800: $color-gray-800;
+$gray-900: $color-gray-900;
+$black:    $color-black;
+// scss-docs-end gray-color-variables
+
+// fusv-disable
+// scss-docs-start gray-colors-map
+$grays: $color-grays;
+// scss-docs-end gray-colors-map
+// fusv-enable
+
+// scss-docs-start color-variables
+$blue:    $color-blue;
+$indigo:  $color-indigo;
+$purple:  $color-purple;
+$pink:    $color-pink;
+$red:     $color-red;
+$orange:  $color-orange;
+$yellow:  $color-yellow;
+$green:   $color-green;
+$teal:    $color-teal;
+$cyan:    $color-cyan;
+// scss-docs-end color-variables
+
+// scss-docs-start colors-map
+$colors: $colors-base;
+// scss-docs-end colors-map
+
+// scss-docs-start theme-color-variables
+$primary:       $blue;
+$secondary:     $gray-600;
+$success:       $green;
+$info:          $cyan;
+$warning:       $yellow;
+$danger:        $red;
+$light:         $gray-100;
+$dark:          $gray-900;
+// scss-docs-end theme-color-variables
+
+// scss-docs-start theme-colors-map
+$theme-colors: $colors-theme;
+// scss-docs-end theme-colors-map
