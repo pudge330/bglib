@@ -27,10 +27,9 @@
 	};
 	bglib.BaseModule = module.extend({
 		constructor: function() {
-			var _self = this;
-			module.apply(_self, arguments);
+			module.apply(this, arguments);
 			if (this.init) {
-				this.init.apply(_self, arguments);
+				this.init.apply(this, arguments);
 			}
 		}
 	});
