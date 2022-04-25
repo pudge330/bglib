@@ -1,11 +1,13 @@
-bglib.create = function(p, s, t) {
-    p = p || {};
-    s = s || {};
-    t = t || 'Base';
-    if (!_bglib.modules.hasOwnProperty(t)) {
-        t = 'Base';
+bglib.create = function(name, prototypeProps, staticProps) {
+    if (!bglib.DT.isString(name)) {
+        // old order: prototypeProps, staticProps, name
+        return bglib.create(staticProps || 'Base', name || {}, prototypeProps || {});
     }
-    if (_bglib.modules.hasOwnProperty(t)) {
-        return _bglib.modules[t].extend(p, s);
+    prototypeProps = prototypeProps || {};
+    staticProps = staticProps || {};
+    name = name || 'Base';
+    if (!_bglib.modules.hasOwnProperty(name)) {
+        name = 'Base';
     }
+    return _bglib.modules[name].extend(prototypeProps, staticProps);
 };
