@@ -369,16 +369,18 @@ if (!Function.prototype.bind) (function(){
     };
   };
 })();
-bglib.create = function(p, s, t) {
-    p = p || {};
-    s = s || {};
-    t = t || 'Base';
-    if (!_bglib.modules.hasOwnProperty(t)) {
-        t = 'Base';
+bglib.create = function(name, prototypeProperties, staticProperties) {
+    if (!bglib.DT.isString(name)) {
+        // old order: prototypeProperties, staticProperties, name
+        return bglib.create(staticProperties || 'Base', name || {}, prototypeProperties || {});
     }
-    if (_bglib.modules.hasOwnProperty(t)) {
-        return _bglib.modules[t].extend(p, s);
+    prototypeProperties = prototypeProperties || {};
+    staticProperties = staticProperties || {};
+    name = name || 'Base';
+    if (!_bglib.modules.hasOwnProperty(name)) {
+        name = 'Base';
     }
+    return _bglib.modules[name].extend(prototypeProperties, staticProperties);
 };
 bglib.setRegisteredModule = function(n, m) {
     _bglib.modules[n] = m;
@@ -498,10 +500,9 @@ bglib.fn.toCamelCase = function(str) {
 	};
 	bglib.BaseModule = module.extend({
 		constructor: function() {
-			var _self = this;
-			module.apply(_self, arguments);
+			module.apply(this, arguments);
 			if (this.init) {
-				this.init.apply(_self, arguments);
+				this.init.apply(this, arguments);
 			}
 		}
 	});

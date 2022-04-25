@@ -370,16 +370,18 @@ if (!Function.prototype.bind) (function(){
     };
   };
 })();
-bglib.create = function(p, s, t) {
-    p = p || {};
-    s = s || {};
-    t = t || 'Base';
-    if (!_bglib.modules.hasOwnProperty(t)) {
-        t = 'Base';
+bglib.create = function(name, prototypeProperties, staticProperties) {
+    if (!bglib.DT.isString(name)) {
+        // old order: prototypeProperties, staticProperties, name
+        return bglib.create(staticProperties || 'Base', name || {}, prototypeProperties || {});
     }
-    if (_bglib.modules.hasOwnProperty(t)) {
-        return _bglib.modules[t].extend(p, s);
+    prototypeProperties = prototypeProperties || {};
+    staticProperties = staticProperties || {};
+    name = name || 'Base';
+    if (!_bglib.modules.hasOwnProperty(name)) {
+        name = 'Base';
     }
+    return _bglib.modules[name].extend(prototypeProperties, staticProperties);
 };
 bglib.noop = function() {};
 bglib.setRegisteredModule = function(n, m) {
@@ -395,6 +397,32 @@ bglib.fn.debounce = function(func, delay) {
 			func.apply(context, args);
 		}, delay);
 	};
+};
+
+bglib.fn.throttle = function(func, delay) {
+	//--https://www.youtube.com/watch?v=cjIswDCKgu0
+	var shouldWait = false;
+	var waitingArguments = null;
+	var timeoutFunc = function() {
+		if (waitingArguments == null) {
+			shouldWait = false;
+		}
+		else {
+			func.apply(this, waitingArguments);
+			waitingArguments = null;
+			setTimeout(timeoutFunc, delay);
+		}
+	};
+	return function() {
+		var args = arguments;
+		if (shouldWait) {
+			waitingArguments = args;
+			return;
+		}
+		func.apply(this, args);
+		shouldWait = true;
+		setTimeout(timeoutFunc, delay);
+	}
 };
 //--@https://github.com/jfriend00/docReady
 //--MIT License
@@ -521,7 +549,22 @@ bglib.fn.formatDecimal = function(amount, pos) {
     return parseFloat(Math.round(amount * 100) / 100).toFixed(pos);
 };
 bglib.fn.formatPrice = function(amount) {
-    return bglib.fn.formatDecimal(amount, 2);
+    if (bglib.DT.isString(amount)) {
+        amount = parseFloat(amount.replace(/[^\d\.]/g, ''));
+    }
+    if(window.Intl && Intl.NumberFormat) {
+        var formatter = new Intl.NumberFormat('en-US', {
+            roundingMode: 'ceil',
+            currency: 'USD',
+            style: 'currency',
+        });
+        return formatter.format(amount);
+    }
+    return '$' + bglib.fn.formatDecimal(amount, 2);
+};
+
+bglib.fn.formatPriceNumeric = function(amount) {
+    return bglib.fn.formatPrice(amount).replace(/[^\d\.]/g, '');
 };
 bglib.fn.htmlEntities = function(s) {
 	s = s.replace(/[\'\"\&]/gim, function(i) {
@@ -713,10 +756,9 @@ bglib.fn.toProperCase = function(str) {
 	};
 	bglib.BaseModule = module.extend({
 		constructor: function() {
-			var _self = this;
-			module.apply(_self, arguments);
+			module.apply(this, arguments);
 			if (this.init) {
-				this.init.apply(_self, arguments);
+				this.init.apply(this, arguments);
 			}
 		}
 	});
