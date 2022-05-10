@@ -29,4 +29,5 @@ define(['bglib', 'jquery', 'bootstrap', 'bootstrap_plus', 'prism'], function(bgl
 	if ($activeMenuItem.length) {
 		jQuery('.side-menu').scrollTop(parseInt($activeMenuItem.position().top));
 	}
+	window.bglib = bglib;
 });
