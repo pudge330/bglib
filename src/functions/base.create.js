@@ -1,7 +1,7 @@
 bglib.extend = function(name, prototypeProps, staticProps) {
     if (!bglib.DT.isString(name)) {
         // old order: prototypeProps, staticProps, name
-        return bglib.create(staticProps || 'Base', name || {}, prototypeProps || {});
+        return bglib.extend(staticProps || 'Base', name || {}, prototypeProps || {});
     }
     prototypeProps = prototypeProps || {};
     staticProps = staticProps || {};
