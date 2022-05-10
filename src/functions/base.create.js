@@ -20,6 +20,13 @@ bglib.module = function(name) {
 
 bglib.create = function(name) {
     if (_bglib.modules.hasOwnProperty(name)) {
-        return _bglib.modules[name].apply(null, arguments);
+        var args = Array.prototype.slice.call(arguments);
+        args.shift();
+        var argsDef = '';
+        for (var i = 0; i < args.length; i++) {
+            argsDef += (argsDef === '' ? '' : ', ') + 'args[' + i + ']';
+        }
+        return eval('new _bglib.modules[name](' + argsDef + ')');
+        // return new _bglib.modules[name](...args);
     }
 };
