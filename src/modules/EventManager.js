@@ -1,7 +1,7 @@
 (function(bglib) {
     var Event = bglib.Event;
     var EventUtil = bglib.EventUtil;
-    bglib.EventManager = bglib.create({
+    bglib.EventManager = bglib.extend({
         target: undefined
         ,attached: undefined
         ,init: function(target) {

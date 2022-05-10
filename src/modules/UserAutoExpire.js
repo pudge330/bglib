@@ -1,4 +1,4 @@
-bglib.UserAutoExpire = bglib.create({
+bglib.UserAutoExpire = bglib.extend({
 	el: undefined
 	,modelId: undefined
 	,modelTimer: undefined
