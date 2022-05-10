@@ -370,19 +370,32 @@ if (!Function.prototype.bind) (function(){
     };
   };
 })();
-bglib.create = function(name, prototypeProperties, staticProperties) {
+bglib.extend = function(name, prototypeProps, staticProps) {
     if (!bglib.DT.isString(name)) {
-        // old order: prototypeProperties, staticProperties, name
-        return bglib.create(staticProperties || 'Base', name || {}, prototypeProperties || {});
+        // old order: prototypeProps, staticProps, name
+        return bglib.create(staticProps || 'Base', name || {}, prototypeProps || {});
     }
-    prototypeProperties = prototypeProperties || {};
-    staticProperties = staticProperties || {};
+    prototypeProps = prototypeProps || {};
+    staticProps = staticProps || {};
     name = name || 'Base';
     if (!_bglib.modules.hasOwnProperty(name)) {
         name = 'Base';
     }
-    return _bglib.modules[name].extend(prototypeProperties, staticProperties);
+    return _bglib.modules[name].extend(prototypeProps, staticProps);
 };
+
+bglib.module = function(name) {
+    if (_bglib.modules.hasOwnProperty(name)) {
+        return _bglib.modules[name];
+    }
+};
+
+bglib.create = function(name) {
+    if (_bglib.modules.hasOwnProperty(name)) {
+        return _bglib.modules[name].apply(null, arguments);
+    }
+};
+
 bglib.noop = function() {};
 bglib.setRegisteredModule = function(n, m) {
     _bglib.modules[n] = m;
