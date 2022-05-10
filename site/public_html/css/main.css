@@ -88,6 +88,10 @@ html, body, .page {
 .side-menu button.current-group.accordion-button {
   color: #0d6efd;
 }
+.side-menu button.accordion-button {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
 
 .content-directory a {
   text-decoration: none;
