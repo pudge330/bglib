@@ -5,7 +5,7 @@ include __DIR__ . '/../src/autoload.php';
 <html>
 <head lang="en">
 	<meta charset="UTF-8">
-	<title>bglib</title>
+	<title><?=$docs->config('site_name')?></title>
 	<link href="/css/bootstrap-plus.min.css" type="text/css" rel="stylesheet">
 	<link href="/css/main.css" type="text/css" rel="stylesheet">
 	<link href="/css/prism.css" type="text/css" rel="stylesheet">
@@ -18,7 +18,7 @@ include __DIR__ . '/../src/autoload.php';
 <div class="page d-flex flex-column">
 	<div class="page-header">
 		<header class="p-2">
-			<div><a href="/">bglib Documentation</a></div>
+			<div><a href="/"><?=$docs->config('site_name')?> Documentation</a></div>
 		</header>
 	</div>
 	<div class="page-content flex-grow-1 d-flex overflow-auto">
@@ -37,7 +37,7 @@ include __DIR__ . '/../src/autoload.php';
 		</main>
 	</div>
 	<div class="page-footer">
-		<footer class="text-center p-1"><div>&copy;2022 bglib - Brandon Garcia</div></footer>
+		<footer class="text-center p-1"><div>&copy;<?=$docs->config('copyright_year')?> <?=$docs->config('copyright_name')?></div></footer>
 	</div>
 </div>
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">

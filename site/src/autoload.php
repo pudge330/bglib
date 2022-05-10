@@ -10,9 +10,22 @@ include __DIR__ . '/../vendor/autoload.php';
 
 class DocumentationSite {
 	protected $uri;
+	protected $configuration;
 
 	public function __construct() {
 		$this->uri = $this->getUri();
+		$this->configuration = include __DIR__ . '/config.php';
+	}
+
+	public function config($name = null) {
+		if ($name) {
+			if (array_key_exists($name, $this->configuration)) {
+				return $this->configuration[$name];
+			}
+		}
+		else {
+			return $this->configuration;
+		}
 	}
 
 	public function getUri() {
