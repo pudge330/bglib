@@ -18,7 +18,7 @@ include __DIR__ . '/../src/autoload.php';
 <div class="page d-flex flex-column">
 	<div class="page-header">
 		<header class="p-2">
-			<div><a href="/"><?=$docs->config('site_name')?> Documentation</a></div>
+			<div><a href="/"><?=$docs->config('header_title')?></a></div>
 		</header>
 	</div>
 	<div class="page-content flex-grow-1 d-flex overflow-auto">
