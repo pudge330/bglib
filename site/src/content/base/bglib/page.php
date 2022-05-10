@@ -12,16 +12,14 @@
 			<?=$docs->renderLinkedHeader("Functions", "functions")?>
 			<h3 class="header-content"><code>bglib.getName()</code></h3>
 			<p>Gets the library name as a string value.</p>
-			<pre class="styled-code"><code class="language-javascript">// outputs: bglib
-console.log(bglib.getName());</code></pre>
+			<?=$docs->getCodeExample("base/bglib", "getName", "javascript")?>
 		</div>
 	</div>
 	<div class="row mt-4">
 		<div class="col-12">
 			<h3 class="header-content"><code>bglib.getVersion()</code></h3>
 			<p>Gets the library's version number.</p>
-			<pre class="styled-code"><code class="language-javascript">// outputs: 1.0
-console.log(bglib.getVersion());</code></pre>
+			<?=$docs->getCodeExample("base/bglib", "getVersion", "javascript")?>
 		</div>
 	</div>
 </div>

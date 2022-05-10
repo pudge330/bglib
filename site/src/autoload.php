@@ -93,9 +93,9 @@ class DocumentationSite {
 		$route = $this->trimSlashes($route);
 		$fileName = $route == '' ? 'home' : $route;
 		return $this->renderFile($this->firstExistingFile([
-			__DIR__ . "/page/{$fileName}.php",
-			__DIR__ . "/page/{$fileName}.md",
-			__DIR__ . "/page/{$fileName}.html"
+			__DIR__ . "/content/{$fileName}/page.php",
+			__DIR__ . "/content/{$fileName}/page.md",
+			__DIR__ . "/content/{$fileName}/page.html"
 		]), $data);
 	}
 
@@ -103,10 +103,24 @@ class DocumentationSite {
 		$route = $this->trimSlashes($route);
 		$fileName = $route == '' ? 'home' : $route;
 		return $this->renderFile($this->firstExistingFile([
-			__DIR__ . "/directory/{$fileName}.php",
-			__DIR__ . "/directory/{$fileName}.md",
-			__DIR__ . "/directory/{$fileName}.html"
+			__DIR__ . "/content/{$fileName}/directory.php",
+			__DIR__ . "/content/{$fileName}/directory.md",
+			__DIR__ . "/content/{$fileName}/directory.html"
 		]), $data);
+	}
+
+	public function getCodeExample($route, $name, $language) {
+		$route = $this->trimSlashes($route);
+		$fileName = $route == '' ? 'home' : $route;
+		$files = glob(__DIR__ . "/content/{$fileName}/code-{$name}.*");
+		if (sizeof($files)) {
+			return
+				"<pre class=\"styled-code\"><code class=\"language-{$language}\">" .
+				htmlentities(file_get_contents($files[0]), ENT_QUOTES, 'UTF-8') .
+				"</code></pre>"
+			;
+		}
+		return "";
 	}
 
 	public function getCurrentPageContent($data = []) {
