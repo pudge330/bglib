@@ -373,7 +373,7 @@ if (!Function.prototype.bind) (function(){
 bglib.extend = function(name, prototypeProps, staticProps) {
     if (!bglib.DT.isString(name)) {
         // old order: prototypeProps, staticProps, name
-        return bglib.create(staticProps || 'Base', name || {}, prototypeProps || {});
+        return bglib.extend(staticProps || 'Base', name || {}, prototypeProps || {});
     }
     prototypeProps = prototypeProps || {};
     staticProps = staticProps || {};
@@ -392,7 +392,14 @@ bglib.module = function(name) {
 
 bglib.create = function(name) {
     if (_bglib.modules.hasOwnProperty(name)) {
-        return _bglib.modules[name].apply(null, arguments);
+        var args = Array.prototype.slice.call(arguments);
+        args.shift();
+        var argsDef = '';
+        for (var i = 0; i < args.length; i++) {
+            argsDef += (argsDef === '' ? '' : ', ') + 'args[' + i + ']';
+        }
+        return eval('new _bglib.modules[name](' + argsDef + ')');
+        // return new _bglib.modules[name](...args);
     }
 };
 
@@ -1474,7 +1481,7 @@ bglib.EventUtil = {
 (function(bglib) {
     var Event = bglib.Event;
     var EventUtil = bglib.EventUtil;
-    bglib.EventManager = bglib.create({
+    bglib.EventManager = bglib.extend({
         target: undefined
         ,attached: undefined
         ,init: function(target) {
@@ -2404,7 +2411,7 @@ bglib.UrlParser = {
 		return copy;
 	}
 };
-bglib.UserAutoExpire = bglib.create({
+bglib.UserAutoExpire = bglib.extend({
 	el: undefined
 	,modelId: undefined
 	,modelTimer: undefined
