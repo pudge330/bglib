@@ -13,6 +13,8 @@ return [
 		'items' => [
 			'/base/bglib/' => 'bglib',
 			'/base/create/' => 'create',
+			'/base/module/' => 'module',
+			'/base/extend/' => 'extend',
 			'/base/noop/' => 'noop',
 			'/base/set-registered-module/' => 'setRegisteredModule'
 		]
