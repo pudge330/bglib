@@ -1198,27 +1198,27 @@ bglib.AppRouter = bglib.BaseModule.extend({
 			this.triggerChange('sort');
 			return this;
 		}
-		,detemineFilterType: function(type) {
+		,determineFilterType: function(type) {
 			type = type.toLowerCase();
-			if (['equals', 'equal', '='].indexOf(type) !== 1)
+			if (['equals', 'equal', '='].indexOf(type) !== -1)
 				return 'equals';
-			else if (['!equals', '!equal', '!=', '<>'].indexOf(type) !== 1)
+			else if (['!equals', '!equal', '!=', '<>'].indexOf(type) !== -1)
 				return 'not-equals';
-			else if (['contains', 'contain', 'has'].indexOf(type) !== 1)
+			else if (['contains', 'contain', 'has'].indexOf(type) !== -1)
 				return 'contains';
-			else if (['!contains', '!contain', '!has'].indexOf(type) !== 1)
+			else if (['!contains', '!contain', '!has'].indexOf(type) !== -1)
 				return 'not-contains';
-			else if (['<', 'less-than', 'lessthan', 'less'].indexOf(type) !== 1)
+			else if (['<', 'less-than', 'lessthan', 'less'].indexOf(type) !== -1)
 				return 'less-than';
-			else if (['>', 'greater-than', 'greaterthan', 'greater'].indexOf(type) !== 1)
+			else if (['>', 'greater-than', 'greaterthan', 'greater'].indexOf(type) !== -1)
 				return 'greater-than';
-			else if (['starts-with', 'starts', '^'].indexOf(type) !== 1)
+			else if (['starts-with', 'starts', '^'].indexOf(type) !== -1)
 				return 'starts-with';
-			else if (['ends-with', 'ends', '$'].indexOf(type) !== 1)
+			else if (['ends-with', 'ends', '$'].indexOf(type) !== -1)
 				return 'ends-with';
-			else if (['regex'].indexOf(type) !== 1)
+			else if (['regex'].indexOf(type) !== -1)
 				return 'regex';
-			else if (['function', 'func'].indexOf(type) !== 1)
+			else if (['function', 'func'].indexOf(type) !== -1)
 				return 'function';
 			else
 				return 'equals';
