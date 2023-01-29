@@ -3,9 +3,9 @@
 	"version": "1.0.0",
 	"description": "Front-end Javascript Library",
 	"license": "MIT",
-	"devDependencies": {
-		"diff": ">=3.5.0",
-		"grunt": "^1.0.4",
+	"scripts": {
+		"grunt": "grunt"
+	},
 	"dependencies": {
 		"grunt": "^1.6.0",
 		"grunt-contrib-concat": "^2.1.0",
