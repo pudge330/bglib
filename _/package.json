@@ -1,0 +1,19 @@
+{
+    "name": "bglib",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/bglib.js",
+    "scripts": {
+        "build": "webpack && webpack --env=production",
+        "build:dev": "webpack",
+        "build:prod": "webpack --env=production"
+    },
+    "author": "Brandon Garcia (public@bgarcia.dev)",
+    "license": "MIT",
+    "dependencies": {
+        "base64-image-loader": "^1.2.0",
+        "css-content-loader": "^1.0.0",
+        "webpack": "^5.88.1",
+        "webpack-cli": "^5.1.4"
+    }
+}

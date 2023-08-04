@@ -403,7 +403,9 @@ bglib.create = function(name) {
     }
 };
 
-bglib.noop = function() {};
+bglib.noop = function() {
+	console.warn('bglib.noop() is deprecated since v2.0.0');
+};
 bglib.setRegisteredModule = function(n, m) {
     _bglib.modules[n] = m;
 };

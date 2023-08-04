@@ -1,7 +1,7 @@
 requirejs.config({
 	baseUrl: '/',
 	paths: {
-		bglib: 'js/vendor/bglib.min'
+		bglib: 'js/vendor/bglib'
 		,bootstrap: 'js/vendor/bootstrap.bundle.min'
 		,bootstrap_plus: 'js/vendor/bootstrap-plus.min'
 		,jquery: 'js/vendor/jquery.min'
