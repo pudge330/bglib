@@ -104,7 +104,7 @@ module.exports = function(grunt) {
 		}
 	});
 
-	const updateHashes = function() {
+	const site_hashes = function() {
 		let html = fs.readFileSync('site/public_html/index.html').toString();
 		if (fs.existsSync('dist/bglib.js')) {
 			const contents = fs.readFileSync('dist/bglib.js').toString();
@@ -171,7 +171,7 @@ module.exports = function(grunt) {
 	]);
 	grunt.registerTask('copy:site_vendor', [
 		'copy',
-		'updateHashes'
+		'site:hashes'
 	]);
-	grunt.registerTask("updateHashes", updateHashes);
+	grunt.registerTask("site:hashes", site_hashes);
 };
