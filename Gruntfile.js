@@ -161,21 +161,17 @@ module.exports = function(grunt) {
 		'webpack',
 		'concat'
 	]);
-
 	grunt.registerTask('dev', [
 		'webpack:dev',
 		'concat:dev'
 	]);
-
 	grunt.registerTask('prod', [
 		'webpack:prod',
 		'concat:prod'
 	]);
-
 	grunt.registerTask('copy:site_vendor', [
 		'copy',
 		'updateHashes'
 	]);
-
 	grunt.registerTask("updateHashes", updateHashes);
 };
