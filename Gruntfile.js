@@ -156,10 +156,6 @@ module.exports = function(grunt) {
 		fs.writeFileSync('site/public_html/index.html', html);
 	};
 
-	const updateSiteVendorHash = function() {
-
-	};
-
 	// Register tasks
 	grunt.registerTask('default', [
 		'webpack',
