@@ -1,5 +1,4 @@
-//--@https://stackoverflow.com/questions/12949590/how-to-detach-event-in-ie-6-7-8-9-using-javascript
-bglib.EventUtil = {
+module.exports = {
     addHandler: function(element, type, handler) {
         if (element.addEventListener) {
             element.addEventListener(type, handler, false);

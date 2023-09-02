@@ -1,4 +1,4 @@
-bglib.UrlParser = {
+module.exports = {
 	regexes: {
 		scheme: /^([a-zA-Z0-9]+):\/\/|^\/\//
 		,username_password: /^([a-zA-Z0-9_-]+)?:([a-zA-Z0-9_-]+)?@/

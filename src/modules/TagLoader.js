@@ -1,6 +1,10 @@
-bglib.TagLoader = {
+// functions
+const jsonParse = require('../functions/jsonParse');
+const DataType = require('./DataType');
+
+module.exports = {
 	getJson: function(elm) {
-		return JSON.safeParse(this.getText(elm));
+		return jsonParse(this.getText(elm));
 	}
 	,setJson: function(elm, obj, parent) {
 		this.setText(elm, JSON.stringify(obj), parent);
@@ -9,7 +13,7 @@ bglib.TagLoader = {
 		var text = null;
 		if (typeof jQuery !== 'undefined' && elm instanceof jQuery)
 			text = elm.text() || elm.html();
-		else if (isObject(elm))
+		else if (DataType.isObject(elm))
 			text = elm.innerHTML;
 		else {
 			elm = document.getElementById(elm.replace(/^#/, ''));
@@ -22,7 +26,7 @@ bglib.TagLoader = {
 		text = this.applyWrap(text);
 		if (typeof jQuery !== 'undefined' && elm instanceof jQuery)
 			elm.html(text);
-		else if (isObject(elm))
+		else if (DataType.isObject(elm))
 			elm.innerHTML = text;
 		else {
 			var _orgElm = elm;

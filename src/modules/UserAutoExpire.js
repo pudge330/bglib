@@ -1,4 +1,15 @@
-bglib.UserAutoExpire = bglib.extend({
+// base
+const extend = require('../base/extend');
+// functions
+const deepCopyMerge = require('../functions/deepCopyMerge');
+const rand = require('../functions/rand');
+const request = require('../functions/request');
+// modules
+const El = require('./Element');
+const EventUtil = require('./EventUtil');
+const Timeout = require('./Timeout');
+
+module.exports = extend({
 	el: undefined
 	,modelId: undefined
 	,modelTimer: undefined
@@ -11,7 +22,7 @@ bglib.UserAutoExpire = bglib.extend({
 	,init: function(opts) {
 		var _self = this;
 		opts = opts || {};
-		opts = Object.deepCopyMerge({
+		opts = deepCopyMerge({
 			exp: 1800 //--30 minutes
 			,warningDuration: 60
 			,expireUrl: '/logout'
@@ -25,16 +36,16 @@ bglib.UserAutoExpire = bglib.extend({
 			model: undefined
 			,timer: undefined
 		};
-		_self.modelId = 'userAutoExpire' + bglib.fn.rand();
+		_self.modelId = 'userAutoExpire' + rand();
 		_self.el.model = _self.attachModel(_self.modelId);
 		_self.el.timer = _self.el.model.querySelector('#' + _self.modelId + '_timer');
-		bglib.EventUtil.addHandler(_self.el.model.querySelector('.userAutoExpire_End'), 'click', function() {
+		EventUtil.addHandler(_self.el.model.querySelector('.userAutoExpire_End'), 'click', function() {
 			_self.endSession();
 		});
-		bglib.EventUtil.addHandler(_self.el.model.querySelector('.userAutoExpire_Keep'), 'click', function() {
+		EventUtil.addHandler(_self.el.model.querySelector('.userAutoExpire_Keep'), 'click', function() {
 			_self.continueSession();
 		});
-		_self.warningTimeout = new bglib.Timeout({
+		_self.warningTimeout = new Timeout({
 			time: _self.exp - _self.warningDuration
 			,callback: function() {
 				_self.promtUser();
@@ -75,15 +86,15 @@ bglib.UserAutoExpire = bglib.extend({
 		this.warningTimeout.restart();
 	}
 	,keepAliveHandler: function() {
-		bglib.fn.request(this.renewUrl);
+		request(this.renewUrl);
 	}
 	,hideModel: function() {
-		bglib.El.removeClass(this.el.model, 'opened');
-		bglib.El.addClass(this.el.model, 'closed');
+		El.removeClass(this.el.model, 'opened');
+		El.addClass(this.el.model, 'closed');
 	}
 	,revealModel: function() {
-		bglib.El.removeClass(this.el.model, 'closed');
-		bglib.El.addClass(this.el.model, 'opened');
+		El.removeClass(this.el.model, 'closed');
+		El.addClass(this.el.model, 'opened');
 	}
 	,attachModel: function(id) {
 		//--build/attach style tag here
@@ -157,7 +168,7 @@ text-align: right;\
 		style.innerHTML = css;
 		document.querySelector('head').appendChild(style);
 		var body = document.querySelector('body');
-		var node = bglib.El.element("" +
+		var node = El.element("" +
 "<div id=\""+id+"_container\" class=\"userAutoExpire_container closed\" style=\"\">" +
 "	<div id=\""+id+"_wrap\" class=\"userAutoExpire_wrap\">" +
 "		<div id=\""+id+"\" class=\"userAutoExpire\">" +

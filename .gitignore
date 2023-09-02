@@ -1,6 +1,6 @@
-.sass-cache/
+_old/site/vendor
 node_modules/
-site/vendor/
+site/public_html/vendor
 
 ##--OS files/folders
 */.DS_Store

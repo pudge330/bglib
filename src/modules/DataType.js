@@ -1,4 +1,4 @@
-bglib.DT = {
+module.exports = {
 	isString: function(value) {
 		return typeof value === 'string' || value instanceof String;
 	}
@@ -20,7 +20,6 @@ bglib.DT = {
 	}
 	,isObject: function(value) {
 		return (value !== false && (typeof value === 'function' || typeof value === 'object'));
-		// return value && typeof value === 'object' && value.constructor === Object;
 	}
 	,isNull: function(value) {
 		return value === null;

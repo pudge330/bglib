@@ -1,0 +1,13 @@
+Options -MultiViews
+Options -Indexes
+RewriteEngine On
+
+DirectoryIndex __view.php
+
+# Ignore directories, files and symbolic links
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-l
+
+# Standard rewrite rule, routes non-files through app router (symfony)
+RewriteRule ^ __view.php [QSA,L]

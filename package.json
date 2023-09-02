@@ -1,18 +1,29 @@
 {
-	"name": "bglib",
-	"version": "1.0.0",
-	"description": "Front-end Javascript Library",
-	"license": "MIT",
-	"scripts": {
-		"grunt": "grunt"
-	},
-	"dependencies": {
-		"grunt": "^1.6.0",
-		"grunt-contrib-concat": "^2.1.0",
-		"grunt-contrib-copy": "^1.0.0",
-		"grunt-contrib-jshint": "^3.2.0",
-		"grunt-contrib-uglify": "^5.2.2",
-		"grunt-contrib-watch": "^1.1.0",
-		"grunt-timer": "^0.6.0"
-	}
+    "name": "bglib",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/bglib.js",
+    "scripts": {
+        "build": "grunt",
+        "dev": "grunt -- dev",
+        "prod": "grunt -- prod",
+        "watch": "grunt -- watch"
+    },
+    "author": "Brandon Garcia (public@bgarcia.dev)",
+    "license": "MIT",
+    "dependencies": {
+        "@babel/core": "^7.22.11",
+        "@babel/preset-env": "^7.22.10",
+        "babel-loader": "^9.1.3",
+        "base64-image-loader": "^1.2.0",
+        "css-content-loader": "^1.0.0",
+        "grunt": "^1.6.1",
+        "grunt-contrib-concat": "^2.1.0",
+        "grunt-contrib-copy": "^1.0.0",
+        "grunt-contrib-watch": "^1.1.0",
+        "grunt-timer": "^0.6.0",
+        "grunt-webpack": "^6.0.0",
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4"
+    }
 }

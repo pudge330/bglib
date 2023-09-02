@@ -1,9 +1,15 @@
-bglib.AppRouter = bglib.BaseModule.extend({
+// functions
+const deepCopyMerge = require('../functions/deepCopyMerge');
+const objectCopy = require('../functions/copy');
+// modules
+const BaseModule = require('./BaseModule');
+
+module.exports = BaseModule.extend({
 	routes: undefined
 	,init: function(_routes) {
 		this.routes = {};
 		if (typeof _routes !== 'undefined') {
-			var copy = Object.deepCopyMerge({}, _routes);
+			var copy = deepCopyMerge({}, _routes);
 			//--changes to copy seems to affect the original object
 			this.setRoutes(copy);
 		}
@@ -95,7 +101,7 @@ bglib.AppRouter = bglib.BaseModule.extend({
 				var urlMatches = url.match(this.routes[_name].compiledRegex);
 				if (urlMatches) {
 					var _slugs = {
-						obj: Object.copy(this.routes[_name].defaultSlugs.obj)
+						obj: objectCopy(this.routes[_name].defaultSlugs.obj)
 						,arr: this.routes[_name].defaultSlugs.arr.slice()
 					};
 					for (var i = 0; i < _slugs.arr.length; i++) {
@@ -107,7 +113,7 @@ bglib.AppRouter = bglib.BaseModule.extend({
 					return {
 						action: this.routes[_name].action
 						,slugs: _slugs
-						,defaults: Object.copy(this.routes[_name].defaults)
+						,defaults: objectCopy(this.routes[_name].defaults)
 					};
 				}
 			}

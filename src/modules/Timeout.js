@@ -1,4 +1,4 @@
-bglib.Timeout = function(_opts) {
+module.exports = function(_opts) {
 	if (typeof _opts == 'undefined')
 		_opts = {};
 	var _expTime = _opts.time || 1800; // 30 minutes

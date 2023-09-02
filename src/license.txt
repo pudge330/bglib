@@ -1,0 +1,9 @@
+/*! @license
+ *
+ * bglib v2.0
+ * https://github.com/pudge330/bglib
+ *
+ * Copyright 2019 - 2023
+ * Released under the MIT license
+ * https://github.com/pudge330/bglib/blob/master/LICENSE
+ */
