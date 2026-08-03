@@ -12,18 +12,18 @@
     "author": "Brandon Garcia (public@bgarcia.dev)",
     "license": "MIT",
     "dependencies": {
-        "@babel/core": "^7.22.11",
-        "@babel/preset-env": "^7.22.10",
-        "babel-loader": "^9.1.3",
-        "base64-image-loader": "^1.2.0",
+        "@babel/core": "^8.0.1",
+        "@babel/preset-env": "^8.0.2",
+        "babel-loader": "^10.1.1",
+        "base64-image-loader": "^1.2.1",
         "css-content-loader": "^1.0.0",
-        "grunt": "^1.6.1",
+        "grunt": "^1.6.3",
         "grunt-contrib-concat": "^2.1.0",
         "grunt-contrib-copy": "^1.0.0",
         "grunt-contrib-watch": "^1.1.0",
         "grunt-timer": "^0.6.0",
-        "grunt-webpack": "^6.0.0",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4"
+        "grunt-webpack": "^8.0.0",
+        "webpack": "^5.109.2",
+        "webpack-cli": "^7.2.2"
     }
 }
