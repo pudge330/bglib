@@ -26,60 +26,55 @@ El.text = function(e) {
 	}
 	return '';
 };
+var classNames = function(cls) {
+	return String(cls).trim().split(/\s+/).filter(function(name) {
+		return name !== '';
+	});
+};
 El.addClass = function(e, cls) {
-    if (!El.hasClass(e, cls)) {
-        if (e.className != '')
-            cls = ' ' + cls;
-        e.className = e.className.trim() + ' ' + cls.trim();
-    }
+	classNames(cls).forEach(function(name) {
+		e.classList.add(name);
+	});
 };
 El.removeClass = function(e, cls) {
-    if (El.hasClass(e, cls)) {
-        cls = ' ' + cls + ' ';
-        var clsName = (" " + e.className + " ").replace(/[\n\t\r]/g, " ");
-        clsName = clsName.replace(cls, '');
-        e.className = clsName.trim();
-    }
+	classNames(cls).forEach(function(name) {
+		e.classList.remove(name);
+	});
 };
 El.toggleClass = function(e, cls) {
-    if (!El.hasClass(e, cls))
-        El.addClass(e, cls);
-    else
-        El.removeClass(e, cls);
+	classNames(cls).forEach(function(name) {
+		e.classList.toggle(name);
+	});
 };
 El.hasClass = function(e, cls) {
-    cls = ' ' + cls + ' ';
-    if ((" " + e.className + " ").replace(/[\n\t\r]/g, " ").indexOf(cls) > -1)
-        return true;
-    else
-        return false;
+	var names = classNames(cls);
+	return names.length > 0 && names.every(function(name) {
+		return e.classList.contains(name);
+	});
 };
 El.css = function(e, prop, val){
-    if (typeof val === 'undefined') {
-        var b = (window.navigator.userAgent).toLowerCase();
-        var s;
-        if(/msie|opera/.test(b)){
-            s = e.currentStyle;
-        }else if(/gecko/.test(b)){
-            s = document.defaultView.getComputedStyle(e, null);
-        }
-        if (DataType.isObject(prop)) {
-        	for (var key in prop) {
-        		if (prop.hasOwnProperty(key)) {
-        			El.css(e, key, prop[key]);
-        		}
-        	}
-        }
-        else {
-	        if(s[prop]!=undefined){
-	            return s[prop];
-	        }
-	        return e.style[prop];
-	    }
-    }
-    else if(prop){
-        e.style[prop]=val;
-    }
+	if (typeof val === 'undefined' && DataType.isObject(prop)) {
+		for (var key in prop) {
+			if (prop.hasOwnProperty(key)) {
+				El.css(e, key, prop[key]);
+			}
+		}
+		return;
+	}
+	if (typeof val === 'undefined') {
+		var styles = window.getComputedStyle(e);
+		return prop.indexOf('-') !== -1
+			? styles.getPropertyValue(prop)
+			: styles[prop];
+	}
+	if (prop) {
+		if (prop.indexOf('-') !== -1) {
+			e.style.setProperty(prop, val);
+		}
+		else {
+			e.style[prop] = val;
+		}
+	}
 };
 El.data = function(e, key, val) {
     if (arguments.length > 2) {
@@ -102,11 +97,7 @@ El.data.remove = function(e, key) {
     elData.remove(e, key);
 };
 El.closest = function(e, sel) {
-    var tmp;
-    do {
-        tmp = e.parent;
-    } while (!tmp.matches(sel) || !tmp);
-    return tmp ? tmp : undefined;
+	return e.closest(sel) || undefined;
 };
 El.element = function(e) {
     var elements = El.elements(e);
@@ -215,16 +206,20 @@ El.offset = function(e) {
     return { top: rect.top + scrollTop, left: rect.left + scrollLeft };
 }
 El.remove = function(e) {
-    if (e instanceof Element) {
-        e.parentElement.removeChild(e);
-    }
-    else if (e instanceof NodeList || e instanceof HTMLCollection || DataType.isArray(e)) {
-        for(var i = e.length - 1; i >= 0; i--) {
-            if(e[i] && e[i].parentElement) {
-                e[i].parentElement.removeChild(e[i]);
-            }
-        }
-    }
+	if (!e) {
+		return;
+	}
+	if (typeof e.remove === 'function') {
+		e.remove();
+		return;
+	}
+	if (typeof e.length === 'number') {
+		Array.from(e).forEach(function(element) {
+			if (element && typeof element.remove === 'function') {
+				element.remove();
+			}
+		});
+	}
 };
 El.on = function(/* element[, names, selector, data, cb] */) {
 	var args = [].slice.call(arguments);
