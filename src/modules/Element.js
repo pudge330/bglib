@@ -206,7 +206,21 @@ El.off = function(/* element[, names, selector, cb] */) {
 	if (element && elEventMap.has(element)) {
 		var em = elEventMap.get(element);
 		EventManager.prototype.off.apply(em, args);
+		if (!em.hasHandlers()) {
+			elEventMap.delete(element);
+		}
 	}
+};
+El.trigger = function(element, name, detail) {
+	if (!element || !DataType.isString(name) || !name.trim()) {
+		return false;
+	}
+	var event = new CustomEvent(name.trim(), {
+		bubbles: true
+		,cancelable: true
+		,detail: detail
+	});
+	return element.dispatchEvent(event);
 };
 
 module.exports = El;

@@ -31,6 +31,9 @@ var _Event = BaseModule.extend({
 	}
 	,stopPropagation: function() {
 		this.__propagationStopped = true;
+		if (typeof this.originalEvent !== 'undefined') {
+			this.originalEvent.stopPropagation();
+		}
 	}
 	,isPropagationStopped: function() {
 		return this.__propagationStopped;

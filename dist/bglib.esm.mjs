@@ -1762,7 +1762,21 @@ El.off = function /* element[, names, selector, cb] */
   if (element && elEventMap.has(element)) {
     var em = elEventMap.get(element);
     EventManager.prototype.off.apply(em, args);
+    if (!em.hasHandlers()) {
+      elEventMap.delete(element);
+    }
   }
+};
+El.trigger = function (element, name, detail) {
+  if (!element || !DataType.isString(name) || !name.trim()) {
+    return false;
+  }
+  var event = new CustomEvent(name.trim(), {
+    bubbles: true,
+    cancelable: true,
+    detail: detail
+  });
+  return element.dispatchEvent(event);
 };
 module.exports = El;
 
@@ -1851,6 +1865,9 @@ var _Event = BaseModule.extend({
   },
   stopPropagation: function () {
     this.__propagationStopped = true;
+    if (typeof this.originalEvent !== 'undefined') {
+      this.originalEvent.stopPropagation();
+    }
   },
   isPropagationStopped: function () {
     return this.__propagationStopped;
@@ -1886,7 +1903,6 @@ const extend = __webpack_require__(/*! ../base/extend */ "./src/base/extend.js")
 // modules
 const DataType = __webpack_require__(/*! ./DataType */ "./src/modules/DataType.js");
 const Event = __webpack_require__(/*! ./Event */ "./src/modules/Event.js");
-const EventUtil = __webpack_require__(/*! ./EventUtil */ "./src/modules/EventUtil.js");
 module.exports = extend({
   target: undefined,
   attached: undefined,
@@ -1895,175 +1911,139 @@ module.exports = extend({
     this.attached = {};
   },
   resolveArguments: function (type, args) {
-    var args = [].slice.call(args);
-    var names, selector, data, callback;
-    names = args.shift();
+    args = [].slice.call(args);
+    var names = args.shift();
+    var selector = null;
+    var data;
+    var callback;
+    var cache = false;
     if (type === 'on') {
-      switch (args.length) {
-        case 3:
+      if (args.length === 3) {
+        selector = args[0];
+        data = args[1];
+        callback = args[2];
+      } else if (args.length === 2) {
+        if (DataType.isString(args[0])) {
           selector = args[0];
-          data = args[1];
-          callback = args[2];
-          break;
-        case 2:
-          if (DataType.isString(args[0])) {
-            selector = args[0];
-          } else {
-            data = args[0];
-          }
-          callback = args[1];
-          break;
-        case 1:
-          if (DataType.isFunction(args[0])) {
-            callback = args[0];
-          }
-          break;
+        } else {
+          data = args[0];
+        }
+        callback = args[1];
+      } else if (args.length === 1 && DataType.isFunction(args[0])) {
+        callback = args[0];
       }
     } else {
-      switch (args.length) {
-        case 3:
+      if (args.length === 3) {
+        selector = args[0];
+        callback = args[1];
+        cache = args[2];
+      } else if (args.length === 2) {
+        if (DataType.isString(args[0])) {
           selector = args[0];
           callback = args[1];
-          cache = args[2];
-          break;
-        case 2:
-          if (DataType.isString(args[0])) {
-            selector = args[0];
-            callback = args[1];
-          } else if (DataType.isFunction(args[0])) {
-            callback = args[0];
-            cache = args[1];
-          }
-          break;
-        case 1:
-          if (DataType.isFunction(args[0])) {
-            callback = args[0];
-          }
-          break;
+        } else if (DataType.isFunction(args[0])) {
+          callback = args[0];
+          cache = args[1];
+        }
+      } else if (args.length === 1) {
+        if (DataType.isString(args[0])) {
+          selector = args[0];
+        } else if (DataType.isFunction(args[0])) {
+          callback = args[0];
+        }
       }
     }
-    selector = selector || null;
-    data = data || data;
-    callback = callback || function () {};
-    cache = typeof cache !== 'undefined' ? cache : false;
-    names = names.trim();
-    names = names ? names.replace(/(\s{2,})/, ' ') : '';
+    names = DataType.isString(names) ? names.trim().split(/\s+/).filter(Boolean).join(' ') : '';
     if (type === 'on') {
       return [names, selector, data, callback];
-    } else {
-      return [names, selector, callback, cache];
     }
+    return [names, selector, callback, Boolean(cache)];
   },
   on: function /* names[, selector, data, cb] */
   () {
     var _self = this;
-    var names, selector, data, callback;
     var args = this.resolveArguments('on', arguments);
-    names = args[0];
-    selector = args[1];
-    data = args[2];
-    callback = args[3];
-    names = names != '' ? names.split(' ') : [];
-    for (var i = 0; i < names.length; i++) {
-      var name = names[i].trim();
-      //--make sure parent event handler is created
-      if (!this.attached.hasOwnProperty(name)) {
-        this.attached[name] = {
-          name: name,
-          fn: function () {},
-          handlers: new Map(),
-          data: new Map()
-        };
-        this.attached[name].fn = function (attached, originalEvent) {
-          var evt = new Event(name, {
-            target: _self.target
-          }, {}, originalEvent);
-          // var evt = _self.newEvent({}, originalEvent);
-          attached.handlers.forEach(function (status, key) {
-            if (evt.isPropagationStopped()) {
-              return;
+    var names = args[0] ? args[0].split(' ') : [];
+    var selector = args[1];
+    var data = args[2];
+    var callback = args[3];
+    if (!DataType.isFunction(callback)) {
+      return;
+    }
+    names.forEach(function (name) {
+      if (!_self.attached[name]) {
+        var listener = function (originalEvent) {
+          _self.attached[name].handlers.slice().some(function (handler) {
+            if (!handler.active) {
+              return false;
             }
-            if (status) {
-              var d = attached.data.get(key);
-              d = d || {};
-              var _evt = new Event(name, {
-                target: _self.target
-              }, d, evt.originalEvent);
-              // var _evt = _self.newEvent(d, evt.originalEvent);
-              if (key.selector) {
-                var closest;
-                if (_evt.originalEvent.target.matches(key.selector)) {
-                  var cb = key.callback.bind(_evt.originalEvent.target);
-                  cb(_evt);
-                  if (_evt.isPropagationStopped()) {
-                    evt.stopPropagation();
-                  }
-                } else if (closest = _evt.originalEvent.target.closest(key.selector)) {
-                  var cb = key.callback.bind(closest);
-                  cb(_evt);
-                  if (_evt.isPropagationStopped()) {
-                    evt.stopPropagation();
-                  }
-                }
-              } else {
-                var cb = key.callback.bind(_self.target);
-                cb(_evt);
-                if (_evt.isPropagationStopped()) {
-                  evt.stopPropagation();
-                }
+            var currentTarget = _self.target;
+            if (handler.selector) {
+              if (!(originalEvent.target instanceof Element)) {
+                return false;
+              }
+              currentTarget = originalEvent.target.closest(handler.selector);
+              if (!currentTarget || currentTarget !== _self.target && typeof _self.target.contains === 'function' && !_self.target.contains(currentTarget)) {
+                return false;
               }
             }
+            var event = new Event(name, {
+              target: originalEvent.target,
+              currentTarget: currentTarget,
+              detail: originalEvent.detail
+            }, handler.data, originalEvent);
+            handler.callback.call(currentTarget, event);
+            return event.isPropagationStopped();
           });
-        }.bind(this.target, this.attached[name]);
-        EventUtil.addHandler(this.target, name, this.attached[name].fn);
+        };
+        _self.attached[name] = {
+          listener: listener,
+          handlers: []
+        };
+        _self.target.addEventListener(name, listener);
       }
-      var mapKey = {
-        name: name,
+      _self.attached[name].handlers.push({
         selector: selector,
-        callback: callback
-      };
-      this.attached[name].handlers.set(mapKey, true);
-      this.attached[name].data.set(mapKey, data);
-    }
+        data: data,
+        callback: callback,
+        active: true
+      });
+    });
   },
   off: function /* names[, selector, cb, cache] */
   () {
-    var names, selector, callback, cache;
+    var _self = this;
     var args = this.resolveArguments('off', arguments);
-    names = args[0];
-    selector = args[1];
-    callback = args[2], cache = args[3];
-    names = names != '' ? names.split(' ') : [];
-    for (var i = 0; i < names.length; i++) {
-      var name = names[i];
-      var mapKey = {
-        name: name,
-        selector: selector,
-        callback: callback
-      };
-      var found;
-      this.attached[name].handlers.forEach(function (value, key) {
-        if (!found && mapKey.name == key.name && mapKey.selector == key.selector && mapKey.callback == key.callback) {
-          found = key;
-        }
-      });
-      if (found) {
-        if (cache) {
-          this.attached[name].handlers.set(found, false);
-        } else {
-          this.attached[name].handlers.delete(found);
-          this.attached[name].data.delete(found);
-        }
+    var names = args[0] ? args[0].split(' ') : Object.keys(this.attached);
+    var selector = args[1];
+    var callback = args[2];
+    var cache = args[3];
+    names.forEach(function (name) {
+      var attached = _self.attached[name];
+      if (!attached) {
+        return;
       }
-    }
+      attached.handlers = attached.handlers.filter(function (handler) {
+        var matches = (selector === null || selector === handler.selector) && (!callback || callback === handler.callback);
+        if (matches && cache) {
+          handler.active = false;
+          return true;
+        }
+        return !matches;
+      });
+      if (!attached.handlers.length) {
+        _self.target.removeEventListener(name, attached.listener);
+        delete _self.attached[name];
+      }
+    });
   },
   hasHandlers: function (name) {
-    if (this.attached.hasOwnProperty(name)) {
-      if (this.attached[name].handlers.size) {
-        return true;
-      }
+    if (name) {
+      return Boolean(this.attached[name] && this.attached[name].handlers.length);
     }
-    return false;
+    return Object.keys(this.attached).some(function (eventName) {
+      return this.attached[eventName].handlers.length > 0;
+    }, this);
   }
 });
 
