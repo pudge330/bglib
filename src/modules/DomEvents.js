@@ -7,17 +7,20 @@ const documentReady = require('../vendor/documentReady');
 
 //--add debounce/delay for certain events
 var isLoaded = false, isReady = false;
-if (document.readyState === 'complete') {
+var hasDom = typeof window !== 'undefined' && typeof document !== 'undefined';
+if (hasDom && document.readyState === 'complete') {
 	isLoaded = true;
 }
-else {
+else if (hasDom) {
 	EventUtil.addHandler(window, 'load', function(e) {
 		isLoaded = true;
 	});
 }
-documentReady(function(e) {
-	isReady = true;
-});
+if (hasDom) {
+	documentReady(function(e) {
+		isReady = true;
+	});
+}
 var DomEvents = EventManager.extend({
 	isDocument: undefined
 	,isWindow: undefined
@@ -56,6 +59,6 @@ var DomEvents = EventManager.extend({
 	}
 });
 module.exports = {
-	window: new DomEvents(window)
-	,document: new DomEvents(document)
+	window: hasDom ? new DomEvents(window) : null
+	,document: hasDom ? new DomEvents(document) : null
 };

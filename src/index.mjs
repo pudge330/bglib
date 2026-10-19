@@ -1,0 +1,32 @@
+import bglib from './index.js';
+
+export default bglib;
+
+export const fn = bglib.fn;
+export const name = bglib.name;
+export const version = bglib.version;
+export const create = bglib.create;
+export const extend = bglib.extend;
+export const module = bglib.module;
+export const noop = bglib.noop;
+export const run = bglib.run;
+export const setModule = bglib.setModule;
+export const AppRouter = bglib.AppRouter;
+export const BaseModule = bglib.BaseModule;
+export const DatasetModule = bglib.DatasetModule;
+export const DataType = bglib.DataType;
+export const DT = bglib.DT;
+export const DomEvents = bglib.DomEvents;
+export const Element = bglib.Element;
+export const El = bglib.El;
+export const ElementalData = bglib.ElementalData;
+export const Event = bglib.Event;
+export const EventManager = bglib.EventManager;
+export const EventModule = bglib.EventModule;
+export const EventUtil = bglib.EventUtil;
+export const Storage = bglib.Storage;
+export const TagLoader = bglib.TagLoader;
+export const Timeout = bglib.Timeout;
+export const UrlParser = bglib.UrlParser;
+export const UserAutoExpire = bglib.UserAutoExpire;
+export const Webify = bglib.Webify;

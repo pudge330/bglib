@@ -6,7 +6,7 @@ var _ = {};
     "use strict";
     // The public function name defaults to window.docReady
     // but you can modify the last line of this function to pass in a different object or method name
-    // if you want to put them in a different namespace and those will be used instead of 
+    // if you want to put them in a different namespace and those will be used instead of
     // window.docReady(...)
     funcName = funcName || "docReady";
     baseObj = baseObj || window;

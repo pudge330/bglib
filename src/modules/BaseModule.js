@@ -28,7 +28,7 @@ _BaseModule.extend = function(prototypeProperties, staticProperties) {
     return child;
 };
 
-BaseModule = _BaseModule.extend({
+var BaseModule = _BaseModule.extend({
 	constructor: function() {
 		_BaseModule.apply(this, arguments);
 		if (this.init) {

@@ -5,7 +5,7 @@ var __priv = {
 };
 var __this = {
 	supported: function() {
-		return ("Notification" in window);
+		return typeof window !== 'undefined' && ("Notification" in window);
 	}
 	,hasAsked: function() {
 		return __priv.hasAsked;
