@@ -94,7 +94,10 @@ El.data.has = function(e, key) {
     return elData.has(e, key);
 };
 El.data.remove = function(e, key) {
-    elData.remove(e, key);
+    if (arguments.length < 2) {
+        return elData.remove(e);
+    }
+    return elData.remove(e, key);
 };
 El.closest = function(e, sel) {
 	return e.closest(sel) || undefined;

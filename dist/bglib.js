@@ -1658,7 +1658,10 @@ El.data.has = function (e, key) {
   return elData.has(e, key);
 };
 El.data.remove = function (e, key) {
-  elData.remove(e, key);
+  if (arguments.length < 2) {
+    return elData.remove(e);
+  }
+  return elData.remove(e, key);
 };
 El.closest = function (e, sel) {
   return e.closest(sel) || undefined;
@@ -1818,6 +1821,9 @@ m.prototype.hasBase = function (element) {
   return this.storage.has(element);
 };
 m.prototype.remove = function (element, key) {
+  if (arguments.length < 2) {
+    return this.reset(element);
+  }
   var result = false;
   if (this.has(element, key)) {
     result = this.storage.get(element).delete(key);
@@ -1830,9 +1836,7 @@ m.prototype.remove = function (element, key) {
   return result;
 };
 m.prototype.reset = function (element) {
-  if (this.hasBase(element)) {
-    this.storage.delete(element);
-  }
+  return this.storage.delete(element);
 };
 module.exports = m;
 
