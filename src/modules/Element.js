@@ -103,101 +103,69 @@ El.element = function(e) {
     var elements = El.elements(e);
     return elements.length ? elements[0] : null;
 };
+var isJQueryObject = function(value) {
+    return typeof jQuery !== 'undefined' && value instanceof jQuery;
+};
+var isNode = function(value) {
+    return typeof Node !== 'undefined' && value instanceof Node;
+};
+var addElements = function(elements, value) {
+    if (value === null || typeof value === 'undefined') {
+        return;
+    }
+    if (DataType.isString(value)) {
+        elements.push.apply(elements, El.resolveElements(value));
+        return;
+    }
+    if (isJQueryObject(value)) {
+        value.toArray().forEach(function(element) {
+            addElements(elements, element);
+        });
+        return;
+    }
+    if (isNode(value)) {
+        if (typeof DocumentFragment !== 'undefined' && value instanceof DocumentFragment) {
+            Array.from(value.childNodes).forEach(function(element) {
+                addElements(elements, element);
+            });
+        }
+        else {
+            elements.push(value);
+        }
+        return;
+    }
+    if (typeof value[Symbol.iterator] === 'function') {
+        Array.from(value).forEach(function(element) {
+            addElements(elements, element);
+        });
+    }
+};
 El.elements = function() {
     var elms = [];
     for (var i = 0; i < arguments.length; i++) {
-        var arg = arguments[i];
-        if (DataType.isString(arg)) {
-            arg = [arg];
-        }
-        else if (jQuery && arg instanceof jQuery) {
-            arg = arg.toArray();
-        }
-        else if (arg instanceof NodeList) {
-        	arg = [].slice.call(arg);
-        }
-        else if (arg instanceof DocumentFragment) {
-        	arg = arg.childNodes
-        }
-        else if (!DataType.isArray(arg)) {
-            arg = [arg];
-        }
-        for (var j = 0; j < arg.length; j++) {
-            if (DataType.isString(arg[j])) {
-                elms = elms.concat(El.resolveElements(arg[j]));
-            }
-            else if (jQuery && arg[j] instanceof jQuery) {
-                elms = elms.concat(arg[j].toArray());
-            }
-            else {
-            	if (DataType.isArray(arg[j])) {
-                	elms.concat(arg[j]);
-            	}
-            	else {
-            		elms.push(arg[j]);
-            	}
-            }
-        }
+        addElements(elms, arguments[i]);
     }
     return elms;
 };
 El.resolveElements = function(str) {
-    var fastRegex = /^(?:(<[\w\W]+>)|\#([\w-]+)|\.([\w-]+))$/; //--matches html string, simple id or class
-    var selectorRegex = /([^\r\n,{}]+)(\s?,(?=[^}]*{)|\s*{)/; //--matches any other selector
-    //--table decendant tags have trouble getting created outside the context of a table
-    var tableChildRegex = /^(<\s*(thead|tbody|tfoot|tr|td|th)[^>]*>)(.*)<\s*\/\s*(thead|tbody|tfoot|tr|td|th)\s*>$/; 
     str = str.trim();
-    if (!str || str == '') { return []; }
-    var elements = [];
-    var match = str.match(fastRegex);
-    if (match) {
-        //--matches HTML String, id selector or class selector
-        if (match[1]) {
-            match = str.match(tableChildRegex);
-            if (match) {
-                //--starting and ending node must match
-                if (match[2] == match[4]) {
-                    var parent = 'table';
-                    if (match[2] == 'tr') {
-                        parent = 'thead';
-                    }
-                    else if (['td', 'th'].indexOf(match[2]) !== -1) {
-                        parent = 'tr';
-                    }
-                    var parent = document.createElement(parent);
-                    parent.innerHTML = str;
-                    elements = parent.childNodes;
-                }
-                else {
-                    elements = [document.createTextNode(str)];
-                }
-            }
-            else {
-                //--possibly need to find better method than this, may not support IE 9, but also maybe doesn't need to
-                elements = document.createRange().createContextualFragment(str).childNodes;
-            }
-        }
-        else if (match[2]) {
-            var tmp = document.getElementById(match[2]);
-            elements = tmp ? [tmp] : [];
-        }
-        else {
-            elements = document.querySelectorAll('.' + match[3]);
-        }
+    if (!str) {
+        return [];
     }
-    else {
-        match = (str.replace(/[\s,{]+$/gm, '').concat(' {')).match(selectorRegex);
-        if (match && !str.match(/^(text\#|txt\#)/)) {
-            //--matches any css selector, still may benefit from using sizzle instead of default querySelector methods
-            elements = document.querySelectorAll(str.replace(/[\s,{]+$/gm, ''));
-        }
-        else {
-            //--standard text node
-            str = str.replace(/^(text\#|txt\#)/, '');
-            elements = [document.createTextNode(str)];
-        }
+    if (/^(text#|txt#)/.test(str)) {
+        return [document.createTextNode(str.replace(/^(text#|txt#)/, ''))];
     }
-    return [].slice.call(elements);
+    if (str.charAt(0) === '<') {
+        var template = document.createElement('template');
+        template.innerHTML = str;
+        return Array.from(template.content.childNodes);
+    }
+    try {
+        return Array.from(document.querySelectorAll(str));
+    }
+    catch (e) {
+        return [];
+    }
 };
 El.offset = function(e) {
     var rect = e.getBoundingClientRect(),
