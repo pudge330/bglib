@@ -50,6 +50,23 @@ The ESM files can also be loaded directly in a modern browser:
 </script>
 ```
 
+### Watching object changes
+
+`watch` returns a Proxy that notifies one or more callbacks when a property changes. All changes that should be observed must be made through the returned Proxy.
+
+```js
+function logChange(property, oldValue, newValue) {
+    console.log(property, oldValue, newValue);
+}
+
+let user = bglib.watch({ name: 'Brandon' }, logChange);
+
+user.name = 'Alice';
+bglib.unwatch(user, logChange);
+```
+
+Calling `watch` again with the original object or its Proxy adds another callback and returns the same Proxy. `unwatch(proxy, callback)` removes one callback; `unwatch(proxy)` removes all callbacks.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS

@@ -15,9 +15,6 @@ bglib.version = function() {
     return _.version;
 };
 
-// vendor
-require('./vendor/Polyfills');
-
 // base
 bglib.create = require('./base/create');
 bglib.extend = require('./base/extend');
@@ -25,6 +22,8 @@ bglib.module = require('./base/module');
 bglib.noop = require('./base/noop');
 bglib.run = require('./base/run');
 bglib.setModule = require('./base/setModule');
+bglib.watch = require('./functions/watch');
+bglib.unwatch = require('./functions/unwatch');
 
 // functions
 bglib.fn.call = require('./functions/call');

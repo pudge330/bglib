@@ -728,6 +728,29 @@ module.exports = function (val, scope) {
 
 /***/ },
 
+/***/ "./src/functions/unwatch.js"
+/*!**********************************!*\
+  !*** ./src/functions/unwatch.js ***!
+  \**********************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const watchState = __webpack_require__(/*! ./watchState */ "./src/functions/watchState.js");
+module.exports = function (object, callback) {
+  var proxy = watchState.states.has(object) ? object : watchState.proxies.get(object);
+  if (!proxy) {
+    return object;
+  }
+  var state = watchState.states.get(proxy);
+  if (typeof callback === 'function') {
+    state.callbacks.delete(callback);
+  } else {
+    state.callbacks.clear();
+  }
+  return proxy;
+};
+
+/***/ },
+
 /***/ "./src/functions/upperCaseFirst.js"
 /*!*****************************************!*\
   !*** ./src/functions/upperCaseFirst.js ***!
@@ -757,6 +780,66 @@ module.exports = function () {
 
 /***/ },
 
+/***/ "./src/functions/watch.js"
+/*!********************************!*\
+  !*** ./src/functions/watch.js ***!
+  \********************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const watchState = __webpack_require__(/*! ./watchState */ "./src/functions/watchState.js");
+module.exports = function (object, callback) {
+  if ((typeof object !== 'object' || object === null) && typeof object !== 'function') {
+    throw new TypeError('watch() requires an object or function');
+  }
+  if (typeof callback !== 'function') {
+    throw new TypeError('watch() requires a callback function');
+  }
+  var state = watchState.states.get(object);
+  if (state) {
+    state.callbacks.add(callback);
+    return object;
+  }
+  var existingProxy = watchState.proxies.get(object);
+  if (existingProxy) {
+    watchState.states.get(existingProxy).callbacks.add(callback);
+    return existingProxy;
+  }
+  state = {
+    callbacks: new Set()
+  };
+  state.callbacks.add(callback);
+  var proxy = new Proxy(object, {
+    set: function (target, property, value, receiver) {
+      var oldValue = Reflect.get(target, property, receiver);
+      var success = Reflect.set(target, property, value, receiver);
+      if (success && !Object.is(oldValue, value)) {
+        Array.from(state.callbacks).forEach(function (callback) {
+          callback.call(receiver, property, oldValue, value);
+        });
+      }
+      return success;
+    }
+  });
+  watchState.proxies.set(object, proxy);
+  watchState.states.set(proxy, state);
+  return proxy;
+};
+
+/***/ },
+
+/***/ "./src/functions/watchState.js"
+/*!*************************************!*\
+  !*** ./src/functions/watchState.js ***!
+  \*************************************/
+(module) {
+
+module.exports = {
+  proxies: new WeakMap(),
+  states: new WeakMap()
+};
+
+/***/ },
+
 /***/ "./src/index.js"
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -781,9 +864,6 @@ bglib.version = function () {
   return _.version;
 };
 
-// vendor
-__webpack_require__(/*! ./vendor/Polyfills */ "./src/vendor/Polyfills.js");
-
 // base
 bglib.create = __webpack_require__(/*! ./base/create */ "./src/base/create.js");
 bglib.extend = __webpack_require__(/*! ./base/extend */ "./src/base/extend.js");
@@ -791,6 +871,8 @@ bglib.module = __webpack_require__(/*! ./base/module */ "./src/base/module.js");
 bglib.noop = __webpack_require__(/*! ./base/noop */ "./src/base/noop.js");
 bglib.run = __webpack_require__(/*! ./base/run */ "./src/base/run.js");
 bglib.setModule = __webpack_require__(/*! ./base/setModule */ "./src/base/setModule.js");
+bglib.watch = __webpack_require__(/*! ./functions/watch */ "./src/functions/watch.js");
+bglib.unwatch = __webpack_require__(/*! ./functions/unwatch */ "./src/functions/unwatch.js");
 
 // functions
 bglib.fn.call = __webpack_require__(/*! ./functions/call */ "./src/functions/call.js");
@@ -2906,57 +2988,6 @@ module.exports = __this;
 
 /***/ },
 
-/***/ "./src/vendor/Polyfills.js"
-/*!*********************************!*\
-  !*** ./src/vendor/Polyfills.js ***!
-  \*********************************/
-() {
-
-//--Object watch/unwatch polyfill
-//--@ https://gist.github.com/eligrey/384583
-if (!Object.prototype.watch) {
-  Object.defineProperty(Object.prototype, "watch", {
-    enumerable: false,
-    configurable: true,
-    writable: false,
-    value: function (prop, handler) {
-      var oldval = this[prop],
-        newval = oldval,
-        getter = function () {
-          return newval;
-        },
-        setter = function (val) {
-          oldval = newval;
-          return newval = handler.call(this, prop, oldval, val);
-        };
-      if (delete this[prop]) {
-        // can't watch constants
-        Object.defineProperty(this, prop, {
-          get: getter,
-          set: setter,
-          enumerable: true,
-          configurable: true
-        });
-      }
-    }
-  });
-}
-// object.unwatch
-if (!Object.prototype.unwatch) {
-  Object.defineProperty(Object.prototype, "unwatch", {
-    enumerable: false,
-    configurable: true,
-    writable: false,
-    value: function (prop) {
-      var val = this[prop];
-      delete this[prop]; // remove accessors
-      this[prop] = val;
-    }
-  });
-}
-
-/***/ },
-
 /***/ "./src/vendor/documentReady.js"
 /*!*************************************!*\
   !*** ./src/vendor/documentReady.js ***!
@@ -3164,7 +3195,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   noop: () => (/* binding */ noop),
 /* harmony export */   run: () => (/* binding */ run),
 /* harmony export */   setModule: () => (/* binding */ setModule),
-/* harmony export */   version: () => (/* binding */ version)
+/* harmony export */   unwatch: () => (/* binding */ unwatch),
+/* harmony export */   version: () => (/* binding */ version),
+/* harmony export */   watch: () => (/* binding */ watch)
 /* harmony export */ });
 /* harmony import */ var _index_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.js */ "./src/index.js");
 
@@ -3178,6 +3211,8 @@ const module = _index_js__WEBPACK_IMPORTED_MODULE_0__.module;
 const noop = _index_js__WEBPACK_IMPORTED_MODULE_0__.noop;
 const run = _index_js__WEBPACK_IMPORTED_MODULE_0__.run;
 const setModule = _index_js__WEBPACK_IMPORTED_MODULE_0__.setModule;
+const watch = _index_js__WEBPACK_IMPORTED_MODULE_0__.watch;
+const unwatch = _index_js__WEBPACK_IMPORTED_MODULE_0__.unwatch;
 const AppRouter = _index_js__WEBPACK_IMPORTED_MODULE_0__.AppRouter;
 const BaseModule = _index_js__WEBPACK_IMPORTED_MODULE_0__.BaseModule;
 const DatasetModule = _index_js__WEBPACK_IMPORTED_MODULE_0__.DatasetModule;
@@ -3227,7 +3262,9 @@ const __webpack_exports__name = __webpack_exports__.name;
 const __webpack_exports__noop = __webpack_exports__.noop;
 const __webpack_exports__run = __webpack_exports__.run;
 const __webpack_exports__setModule = __webpack_exports__.setModule;
+const __webpack_exports__unwatch = __webpack_exports__.unwatch;
 const __webpack_exports__version = __webpack_exports__.version;
-export { __webpack_exports__AppRouter as AppRouter, __webpack_exports__BaseModule as BaseModule, __webpack_exports__DT as DT, __webpack_exports__DataType as DataType, __webpack_exports__DatasetModule as DatasetModule, __webpack_exports__DomEvents as DomEvents, __webpack_exports__El as El, __webpack_exports__Element as Element, __webpack_exports__ElementalData as ElementalData, __webpack_exports__Event as Event, __webpack_exports__EventManager as EventManager, __webpack_exports__EventModule as EventModule, __webpack_exports__EventUtil as EventUtil, __webpack_exports__Storage as Storage, __webpack_exports__TagLoader as TagLoader, __webpack_exports__Timeout as Timeout, __webpack_exports__UrlParser as UrlParser, __webpack_exports__UserAutoExpire as UserAutoExpire, __webpack_exports__Webify as Webify, __webpack_exports__create as create, __webpack_exports__default as default, __webpack_exports__extend as extend, __webpack_exports__fn as fn, __webpack_exports__module as module, __webpack_exports__name as name, __webpack_exports__noop as noop, __webpack_exports__run as run, __webpack_exports__setModule as setModule, __webpack_exports__version as version };
+const __webpack_exports__watch = __webpack_exports__.watch;
+export { __webpack_exports__AppRouter as AppRouter, __webpack_exports__BaseModule as BaseModule, __webpack_exports__DT as DT, __webpack_exports__DataType as DataType, __webpack_exports__DatasetModule as DatasetModule, __webpack_exports__DomEvents as DomEvents, __webpack_exports__El as El, __webpack_exports__Element as Element, __webpack_exports__ElementalData as ElementalData, __webpack_exports__Event as Event, __webpack_exports__EventManager as EventManager, __webpack_exports__EventModule as EventModule, __webpack_exports__EventUtil as EventUtil, __webpack_exports__Storage as Storage, __webpack_exports__TagLoader as TagLoader, __webpack_exports__Timeout as Timeout, __webpack_exports__UrlParser as UrlParser, __webpack_exports__UserAutoExpire as UserAutoExpire, __webpack_exports__Webify as Webify, __webpack_exports__create as create, __webpack_exports__default as default, __webpack_exports__extend as extend, __webpack_exports__fn as fn, __webpack_exports__module as module, __webpack_exports__name as name, __webpack_exports__noop as noop, __webpack_exports__run as run, __webpack_exports__setModule as setModule, __webpack_exports__unwatch as unwatch, __webpack_exports__version as version, __webpack_exports__watch as watch };
 
 //# sourceMappingURL=bglib.esm.mjs.map

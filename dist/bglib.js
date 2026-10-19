@@ -739,6 +739,29 @@ module.exports = function (val, scope) {
 
 /***/ },
 
+/***/ "./src/functions/unwatch.js"
+/*!**********************************!*\
+  !*** ./src/functions/unwatch.js ***!
+  \**********************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const watchState = __webpack_require__(/*! ./watchState */ "./src/functions/watchState.js");
+module.exports = function (object, callback) {
+  var proxy = watchState.states.has(object) ? object : watchState.proxies.get(object);
+  if (!proxy) {
+    return object;
+  }
+  var state = watchState.states.get(proxy);
+  if (typeof callback === 'function') {
+    state.callbacks.delete(callback);
+  } else {
+    state.callbacks.clear();
+  }
+  return proxy;
+};
+
+/***/ },
+
 /***/ "./src/functions/upperCaseFirst.js"
 /*!*****************************************!*\
   !*** ./src/functions/upperCaseFirst.js ***!
@@ -768,6 +791,66 @@ module.exports = function () {
 
 /***/ },
 
+/***/ "./src/functions/watch.js"
+/*!********************************!*\
+  !*** ./src/functions/watch.js ***!
+  \********************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const watchState = __webpack_require__(/*! ./watchState */ "./src/functions/watchState.js");
+module.exports = function (object, callback) {
+  if ((typeof object !== 'object' || object === null) && typeof object !== 'function') {
+    throw new TypeError('watch() requires an object or function');
+  }
+  if (typeof callback !== 'function') {
+    throw new TypeError('watch() requires a callback function');
+  }
+  var state = watchState.states.get(object);
+  if (state) {
+    state.callbacks.add(callback);
+    return object;
+  }
+  var existingProxy = watchState.proxies.get(object);
+  if (existingProxy) {
+    watchState.states.get(existingProxy).callbacks.add(callback);
+    return existingProxy;
+  }
+  state = {
+    callbacks: new Set()
+  };
+  state.callbacks.add(callback);
+  var proxy = new Proxy(object, {
+    set: function (target, property, value, receiver) {
+      var oldValue = Reflect.get(target, property, receiver);
+      var success = Reflect.set(target, property, value, receiver);
+      if (success && !Object.is(oldValue, value)) {
+        Array.from(state.callbacks).forEach(function (callback) {
+          callback.call(receiver, property, oldValue, value);
+        });
+      }
+      return success;
+    }
+  });
+  watchState.proxies.set(object, proxy);
+  watchState.states.set(proxy, state);
+  return proxy;
+};
+
+/***/ },
+
+/***/ "./src/functions/watchState.js"
+/*!*************************************!*\
+  !*** ./src/functions/watchState.js ***!
+  \*************************************/
+(module) {
+
+module.exports = {
+  proxies: new WeakMap(),
+  states: new WeakMap()
+};
+
+/***/ },
+
 /***/ "./src/index.js"
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -792,9 +875,6 @@ bglib.version = function () {
   return _.version;
 };
 
-// vendor
-__webpack_require__(/*! ./vendor/Polyfills */ "./src/vendor/Polyfills.js");
-
 // base
 bglib.create = __webpack_require__(/*! ./base/create */ "./src/base/create.js");
 bglib.extend = __webpack_require__(/*! ./base/extend */ "./src/base/extend.js");
@@ -802,6 +882,8 @@ bglib.module = __webpack_require__(/*! ./base/module */ "./src/base/module.js");
 bglib.noop = __webpack_require__(/*! ./base/noop */ "./src/base/noop.js");
 bglib.run = __webpack_require__(/*! ./base/run */ "./src/base/run.js");
 bglib.setModule = __webpack_require__(/*! ./base/setModule */ "./src/base/setModule.js");
+bglib.watch = __webpack_require__(/*! ./functions/watch */ "./src/functions/watch.js");
+bglib.unwatch = __webpack_require__(/*! ./functions/unwatch */ "./src/functions/unwatch.js");
 
 // functions
 bglib.fn.call = __webpack_require__(/*! ./functions/call */ "./src/functions/call.js");
@@ -2914,57 +2996,6 @@ if (__this.supported()) {
   //
 }
 module.exports = __this;
-
-/***/ },
-
-/***/ "./src/vendor/Polyfills.js"
-/*!*********************************!*\
-  !*** ./src/vendor/Polyfills.js ***!
-  \*********************************/
-() {
-
-//--Object watch/unwatch polyfill
-//--@ https://gist.github.com/eligrey/384583
-if (!Object.prototype.watch) {
-  Object.defineProperty(Object.prototype, "watch", {
-    enumerable: false,
-    configurable: true,
-    writable: false,
-    value: function (prop, handler) {
-      var oldval = this[prop],
-        newval = oldval,
-        getter = function () {
-          return newval;
-        },
-        setter = function (val) {
-          oldval = newval;
-          return newval = handler.call(this, prop, oldval, val);
-        };
-      if (delete this[prop]) {
-        // can't watch constants
-        Object.defineProperty(this, prop, {
-          get: getter,
-          set: setter,
-          enumerable: true,
-          configurable: true
-        });
-      }
-    }
-  });
-}
-// object.unwatch
-if (!Object.prototype.unwatch) {
-  Object.defineProperty(Object.prototype, "unwatch", {
-    enumerable: false,
-    configurable: true,
-    writable: false,
-    value: function (prop) {
-      var val = this[prop];
-      delete this[prop]; // remove accessors
-      this[prop] = val;
-    }
-  });
-}
 
 /***/ },
 
