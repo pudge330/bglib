@@ -205,11 +205,13 @@ module.exports = function (tpl, keys) {
 (module) {
 
 module.exports = function (arr1, arr2) {
-  for (var i = 0; i < arr2.length; i++) {
-    if (arr1.indexOf(arr2[i]) === -1) {
-      arr1.push(arr2[i]);
+  var values = new Set(arr1);
+  arr2.forEach(function (value) {
+    if (!values.has(value)) {
+      values.add(value);
+      arr1.push(value);
     }
-  }
+  });
   return arr1;
 };
 
@@ -222,9 +224,7 @@ module.exports = function (arr1, arr2) {
 (module) {
 
 module.exports = function (o) {
-  if (null === o || "object" != typeof o) return o;
-  var c = o.constructor();
-  return Object.assign(c, o);
+  return structuredClone(o);
 };
 
 /***/ },
@@ -268,25 +268,18 @@ module.exports = function (func, delay) {
   \****************************************/
 (module, __unused_webpack_exports, __webpack_require__) {
 
-// functions
-const isObject = (__webpack_require__(/*! ../modules/DataType */ "./src/modules/DataType.js").isObject);
-const deepCopyMerge = function () {
+const mergeObjects = __webpack_require__(/*! ./mergeObjects */ "./src/functions/mergeObjects.js");
+module.exports = function () {
   var args = Array.prototype.slice.call(arguments);
-  if (args.length === 0) return {};
-  var merged = Object.assign({}, args.shift());
-  for (var i = 0; i < args.length; i++) {
-    for (var key in args[i]) {
-      if (args[i].hasOwnProperty(key)) {
-        if (isObject(args[i][key]) && !Array.isArray(args[i][key]) && merged.hasOwnProperty(key) && isObject(merged[key])) merged[key] = deepCopyMerge(merged[key], args[i][key]);else if (Array.isArray(args[i][key]) && merged.hasOwnProperty(key) && Array.isArray(merged[key])) merged[key] = merged[key].concat(args[i][key]);else {
-          if (isObject(args[i][key])) args[i][key] = Object.assign({}, args[i][key]);
-          merged[key] = args[i][key];
-        }
-      }
-    }
+  if (!args.length) {
+    return {};
   }
+  var merged = structuredClone(args.shift());
+  args.forEach(function (source) {
+    mergeObjects(merged, source);
+  });
   return merged;
 };
-module.exports = deepCopyMerge;
 
 /***/ },
 
@@ -296,30 +289,18 @@ module.exports = deepCopyMerge;
   \************************************/
 (module, __unused_webpack_exports, __webpack_require__) {
 
-// functions
-const isObject = (__webpack_require__(/*! ../modules/DataType */ "./src/modules/DataType.js").isObject);
-var deepMerge = function () {
+const mergeObjects = __webpack_require__(/*! ./mergeObjects */ "./src/functions/mergeObjects.js");
+module.exports = function () {
   var args = Array.prototype.slice.call(arguments);
-  if (args.length === 0) return {};
-  var clone = false;
-  if (args.length > 2 && args[args.length - 1] === true) {
-    clone = true;
-    args.pop();
+  if (!args.length) {
+    return {};
   }
-  var merged = clone ? Object.assign({}, args.shift()) : args.shift();
-  for (var i = 0; i < args.length; i++) {
-    for (var key in args[i]) {
-      if (args[i].hasOwnProperty(key)) {
-        if (isObject(args[i][key]) && !Array.isArray(args[i][key]) && merged.hasOwnProperty(key) && isObject(merged[key])) merged[key] = deepMerge(merged[key], args[i][key], true);else if (Array.isArray(args[i][key]) && merged.hasOwnProperty(key) && Array.isArray(merged[key])) merged[key] = merged[key].concat(args[i][key]);else {
-          if (isObject(args[i][key])) args[i][key] = Object.assign({}, args[i][key]);
-          merged[key] = args[i][key];
-        }
-      }
-    }
-  }
+  var merged = args.shift();
+  args.forEach(function (source) {
+    mergeObjects(merged, source);
+  });
   return merged;
 };
-module.exports = deepMerge;
 
 /***/ },
 
@@ -462,6 +443,82 @@ module.exports = function (_json) {
 
 module.exports = function (str) {
   str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+/***/ },
+
+/***/ "./src/functions/mergeObjects.js"
+/*!***************************************!*\
+  !*** ./src/functions/mergeObjects.js ***!
+  \***************************************/
+(module) {
+
+var isPlainObject = function (value) {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+  var prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
+var isSafeKey = function (key) {
+  return key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+};
+var cloneValue = function (value, references) {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+  if (references.has(value)) {
+    return references.get(value);
+  }
+  if (Array.isArray(value)) {
+    var array = [];
+    references.set(value, array);
+    value.forEach(function (item) {
+      array.push(cloneValue(item, references));
+    });
+    return array;
+  }
+  if (isPlainObject(value)) {
+    var object = {};
+    references.set(value, object);
+    mergeInto(object, value, references);
+    return object;
+  }
+  return value;
+};
+var mergeInto = function (target, source, references) {
+  references.set(source, target);
+  Object.keys(source).forEach(function (key) {
+    if (!isSafeKey(key)) {
+      return;
+    }
+    var value = source[key];
+    if (references.has(value)) {
+      target[key] = references.get(value);
+    } else if (Array.isArray(value) && Array.isArray(target[key])) {
+      references.set(value, target[key]);
+      value.forEach(function (item) {
+        target[key].push(cloneValue(item, references));
+      });
+    } else if (isPlainObject(value)) {
+      var destination = isPlainObject(target[key]) ? target[key] : {};
+      target[key] = destination;
+      mergeInto(destination, value, references);
+    } else {
+      target[key] = cloneValue(value, references);
+    }
+  });
+  return target;
+};
+module.exports = function (target, source) {
+  if (source === null || typeof source !== 'object') {
+    if (typeof source === 'function') {
+      structuredClone(source);
+    }
+    return target;
+  }
+  var clonedSource = structuredClone(source);
+  return mergeInto(target, clonedSource, new WeakMap());
 };
 
 /***/ },

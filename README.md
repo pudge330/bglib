@@ -91,6 +91,12 @@ const result = await response.json();
 
 HTTP errors resolve with a response whose `ok` property is `false`, following native `fetch` behavior. Network failures reject the Promise. Callback `success` or `error` runs once, followed by `always` once.
 
+### Copying and merging
+
+`bglib.fn.copy(value)` uses native `structuredClone`, producing an independent deep copy that supports circular references and built-in types such as Date, Map, Set, and typed arrays. Like `structuredClone` itself, it throws `DataCloneError` for functions and DOM elements.
+
+`deepMerge(target, ...sources)` mutates and returns `target`. `deepCopyMerge(...sources)` returns a new value without mutating its inputs. Both recursively merge plain objects and concatenate arrays.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS
