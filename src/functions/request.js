@@ -3,31 +3,68 @@ const noop = require('../base/noop');
 // modules
 const DataType = require('../modules/DataType');
 
-module.exports = function(url, cb, data, type) {
-    data = data || {};
-    type = type || 'GET';
-    var sendData = (type !== 'GET');
-    cb = cb || noop;
-    cb = DataType.isFunction(cb)
-        ? {success: cb, error: noop, always: noop}
-        : Object.assign({success: noop, error: noop, always: noop}, cb)
-    ;
-    var xhr = new XMLHttpRequest();
-    xhr.open(type, url, true);
-    xhr.addEventListener("readystatechange", function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            cb.success(xhr.responseText, xhr, data);
+var resolveCallbacks = function(callbacks) {
+    if (DataType.isFunction(callbacks)) {
+        callbacks = { success: callbacks };
+    }
+    else if (!DataType.isObject(callbacks)) {
+        callbacks = {};
+    }
+
+    return {
+        success: DataType.isFunction(callbacks.success) ? callbacks.success : noop
+        ,error: DataType.isFunction(callbacks.error) ? callbacks.error : noop
+        ,always: DataType.isFunction(callbacks.always) ? callbacks.always : noop
+    };
+};
+
+var reportCallbackError = function(error) {
+    setTimeout(function() {
+        throw error;
+    });
+};
+
+var runCallbacks = function(callbacks, success, text, response, data) {
+    try {
+        if (success) {
+            callbacks.success(text, response, data);
         }
         else {
-            cb.error(xhr.responseText, xhr, data);
+            callbacks.error(text, response, data);
         }
-        cb.always(xhr.responseText, xhr, data);
-    }, false);
-    if (sendData) {
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify(data));
     }
-    else {
-        xhr.send();
+    finally {
+        callbacks.always(text, response, data);
     }
+};
+
+module.exports = function(url, callbacks, data, type) {
+    callbacks = resolveCallbacks(callbacks);
+    data = typeof data === 'undefined' ? {} : data;
+    type = DataType.isString(type) ? type.toUpperCase() : 'GET';
+
+    var options = { method: type };
+    if (type !== 'GET' && type !== 'HEAD') {
+        options.headers = { 'Content-Type': 'application/json;charset=UTF-8' };
+        options.body = JSON.stringify(data);
+    }
+
+    var request = fetch(url, options);
+
+    request.then(function(response) {
+        response.clone().text().then(function(text) {
+            runCallbacks(callbacks, response.ok, text, response, data);
+        }, function() {
+            runCallbacks(callbacks, false, '', response, data);
+        }).catch(reportCallbackError);
+    }, function() {
+        try {
+            runCallbacks(callbacks, false, '', null, data);
+        }
+        catch (callbackError) {
+            reportCallbackError(callbackError);
+        }
+    });
+
+    return request;
 };

@@ -67,6 +67,30 @@ bglib.unwatch(user, logChange);
 
 Calling `watch` again with the original object or its Proxy adds another callback and returns the same Proxy. `unwatch(proxy, callback)` removes one callback; `unwatch(proxy)` removes all callbacks.
 
+### Making requests
+
+`bglib.fn.request` supports its original callback API and also returns the native `fetch` Promise. Callback response bodies are read from a clone, so the returned `Response` remains available to Promise consumers.
+
+```js
+bglib.fn.request('/api/user', function(text, response, requestData) {
+    console.log(text);
+}, { name: 'Brandon' }, 'POST');
+```
+
+For modern Promise usage, handle the native `Response` directly:
+
+```js
+const response = await bglib.fn.request('/api/user');
+
+if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+}
+
+const result = await response.json();
+```
+
+HTTP errors resolve with a response whose `ok` property is `false`, following native `fetch` behavior. Network failures reject the Promise. Callback `success` or `error` runs once, followed by `always` once.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS
