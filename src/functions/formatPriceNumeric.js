@@ -1,6 +1,6 @@
 // functions
-const formatPrice = require('./formatPrice');
+const formatDecimal = require('./formatDecimal');
 
 module.exports = function(amount) {
-    return formatPrice(amount).replace(/[^\d\.]/g, '');
+    return formatDecimal(amount, 2);
 };

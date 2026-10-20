@@ -338,18 +338,17 @@ module.exports = deepMerge;
 /*!****************************************!*\
   !*** ./src/functions/formatDecimal.js ***!
   \****************************************/
-(module) {
+(module, __unused_webpack_exports, __webpack_require__) {
 
+const normalizeNumber = __webpack_require__(/*! ./normalizeNumber */ "./src/functions/normalizeNumber.js");
 module.exports = function (amount, pos) {
-  pos = pos || 2;
-  if (!amount || amount === '0') {
-    amount = 0;
-  }
-  if (typeof amount === 'string') {
-    amount = amount.replace(/[^\d\.]/g, '');
-  }
-  //-@ http://stackoverflow.com/a/6134070
-  return parseFloat(Math.round(amount * 100) / 100).toFixed(pos);
+  pos = typeof pos === 'undefined' ? 2 : Number(pos);
+  pos = Number.isInteger(pos) && pos >= 0 && pos <= 20 ? pos : 2;
+  return new Intl.NumberFormat('en-US', {
+    useGrouping: false,
+    minimumFractionDigits: pos,
+    maximumFractionDigits: pos
+  }).format(normalizeNumber(amount));
 };
 
 /***/ },
@@ -360,23 +359,13 @@ module.exports = function (amount, pos) {
   \**************************************/
 (module, __unused_webpack_exports, __webpack_require__) {
 
-// functions
-const formatDecimal = __webpack_require__(/*! ./formatDecimal */ "./src/functions/formatDecimal.js");
-// modules
-const DataType = __webpack_require__(/*! ../modules/DataType */ "./src/modules/DataType.js");
+const normalizeNumber = __webpack_require__(/*! ./normalizeNumber */ "./src/functions/normalizeNumber.js");
+var formatter = new Intl.NumberFormat('en-US', {
+  currency: 'USD',
+  style: 'currency'
+});
 module.exports = function (amount) {
-  if (DataType.isString(amount)) {
-    amount = parseFloat(amount.replace(/[^\d\.]/g, ''));
-  }
-  if (window.Intl && Intl.NumberFormat) {
-    var formatter = new Intl.NumberFormat('en-US', {
-      roundingMode: 'ceil',
-      currency: 'USD',
-      style: 'currency'
-    });
-    return formatter.format(amount);
-  }
-  return '$' + formatDecimal(amount, 2);
+  return formatter.format(normalizeNumber(amount));
 };
 
 /***/ },
@@ -388,9 +377,9 @@ module.exports = function (amount) {
 (module, __unused_webpack_exports, __webpack_require__) {
 
 // functions
-const formatPrice = __webpack_require__(/*! ./formatPrice */ "./src/functions/formatPrice.js");
+const formatDecimal = __webpack_require__(/*! ./formatDecimal */ "./src/functions/formatDecimal.js");
 module.exports = function (amount) {
-  return formatPrice(amount).replace(/[^\d\.]/g, '');
+  return formatDecimal(amount, 2);
 };
 
 /***/ },
@@ -484,6 +473,27 @@ module.exports = function (_json) {
 
 module.exports = function (str) {
   str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+/***/ },
+
+/***/ "./src/functions/normalizeNumber.js"
+/*!******************************************!*\
+  !*** ./src/functions/normalizeNumber.js ***!
+  \******************************************/
+(module) {
+
+module.exports = function (value) {
+  if (typeof value === 'string') {
+    var isAccountingNegative = /^\s*\(.*\)\s*$/.test(value);
+    value = value.replace(/,/g, '').replace(/[^\d.+-]/g, '');
+    value = Number.parseFloat(value);
+    if (isAccountingNegative) {
+      value = -Math.abs(value);
+    }
+  }
+  value = Number(value);
+  return Number.isFinite(value) ? value : 0;
 };
 
 /***/ },
