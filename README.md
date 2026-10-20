@@ -97,6 +97,21 @@ HTTP errors resolve with a response whose `ok` property is `false`, following na
 
 `deepMerge(target, ...sources)` mutates and returns `target`. `deepCopyMerge(...sources)` returns a new value without mutating its inputs. Both recursively merge plain objects and concatenate arrays.
 
+### Custom module events
+
+Classes extending `EventModule` can publish custom, non-DOM events:
+
+```js
+module.on('change', { source: 'settings' }, function(event) {
+    console.log(event.value, event.data.source);
+});
+
+const completed = module.trigger('change', { value: 'dark' });
+module.off('change');
+```
+
+`off(name, callback)` removes matching handlers, `off(name)` removes every handler for that event, and `off()` removes all module handlers. `trigger()` returns `false` when a handler calls `event.preventDefault()` and `true` otherwise.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS

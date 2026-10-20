@@ -14,14 +14,12 @@ var _Event = BaseModule.extend({
 		this.__propagationStopped = false;
 		this.__defaultPrevented = false;
 		this.name = name || 'UnsetEventName';
-		this.data = data || {};
+		this.data = typeof data === 'undefined' ? {} : data;
 		event = event || {};
 		this.__eventProps = event;
-		for (var key in event) {
-			if (event.hasOwnProperty(key)) {
-				this[key] = event[key];
-			}
-		}
+		Object.keys(event).forEach(function(key) {
+			this[key] = event[key];
+		}, this);
 		if (original) {
 			this.originalEvent = original;
 		}

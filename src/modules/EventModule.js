@@ -5,148 +5,101 @@ const BaseModule = require('./BaseModule');
 const DataType = require('./DataType');
 const Event = require('./Event');
 
+var eventNames = function(names) {
+    return DataType.isString(names) ? names.trim().split(/\s+/).filter(Boolean) : [];
+};
+
 var EventModule = BaseModule.extend({
-	__moduleEvents: undefined
-	,constructor: function() {
-		var _self = this;
-		_self.__moduleEvents = {};
-		BaseModule.apply(_self, arguments);
-	}
-	,on: function(/* names[, data, cb] */) {
-		var _self = this;
-        var names, data, callback;
-        var args = this.resolveArguments('on', arguments);
-        names = args[0]; data = args[1]; callback = args[2];
-        names = names != '' ? names.split(' ') : [];
-        for (var i = 0; i < names.length; i++) {
-        	var name  = names[i].trim();
-        	if (!this.__moduleEvents.hasOwnProperty(name)) {
-        		this.__moduleEvents[name] = {
-        			name: name
-        			,fn: function() {}
-        			,handlers: new Map()
-        			,data: new Map()
-        		};
-        		this.__moduleEvents[name].fn = (function(attached, evt) {
-                    attached.handlers.forEach(function (status, key) {
-                        if (evt.isPropagationStopped()) { return; }
-                        if (status) {
-                            var d = attached.data.get(key);
-                            d = d || {};
-                            var _evt = new Event(key.name, evt.getEventProps(), d);
-                            var cb = key.callback.bind(_self);
-                            cb(_evt);
-                            if (_evt.isPropagationStopped()) {
-                                evt.stopPropagation();
-                            }
-                            if (_evt.isDefaultPrevented()) {
-                            	evt.preventDefault();
-                            }
-                        }
-                    });
-                    return evt.isDefaultPrevented();
-                }).bind(this, this.__moduleEvents[name]);
-        	}
-        	var mapKey = {
-                name: name
-                ,callback: callback
-            };
-            this.__moduleEvents[name].handlers.set(mapKey, true);
-            this.__moduleEvents[name].data.set(mapKey, data);
-        }
-	}
-	,off: function(/* names[, cb, cache] */) {
-		var names, callback, cache;
-        var args = this.resolveArguments('off', arguments);
-        names = args[0]; callback = args[1], cache = args[2];
-        names = names != '' ? names.split(' ') : [];
-        for (var i = 0; i < names.length; i++) {
-        	var name = names[i];
-            var mapKey = {
-                name: name
-                ,callback: callback
-            };
-            var found;
-            this.__moduleEvents[name].handlers.forEach(function(value, key) {
-                if (!found && (mapKey.name == key.name && mapKey.callback == key.callback)) {
-                    found = key;
-                }
-            });
-            if (found) {
-            	if (cache) {
-                	this.__moduleEvents[name].handlers.set(found, false);
-                }
-                else {
-                	this.__moduleEvents[name].handlers.delete(found);
-                	this.__moduleEvents[name].data.delete(found);
-                }
-            }
-        }
-	}
-	,trigger: function(name, event) {
-		if (!(event instanceof Event)) {
-			event = new Event(name, event);
-		}
-		if (name in this.__moduleEvents) {
-			var cnf = this.__moduleEvents[name];
-			return cnf.fn(event);
-		}
-		return false;
-	}
-    ,hasHandlers: function(name) {
-        if (this.__moduleEvents.hasOwnProperty(name)) {
-            if (this.__moduleEvents[name].handlers.size) {
-                return true;
-            }
-        }
-        return false;
+    __moduleEvents: undefined
+    ,constructor: function() {
+        this.__moduleEvents = Object.create(null);
+        BaseModule.apply(this, arguments);
     }
-	,resolveArguments: function(type, args) {
-		var args = [].slice.call(args);
-        var names, data, callback, cache;
-        names = args.shift();
-        if (type === 'on') {
-            switch (args.length) {
-                case 2:
-                    data = args[0];
-                    callback = args[1];
-                break;
-                case 1:
-                    if (DataType.isFunction(args[0])) {
-                        callback = args[0];
-                    }
+    ,on: function(/* names[, data, callback] */) {
+        var args = [].slice.call(arguments);
+        var names = eventNames(args.shift());
+        var callback = args.pop();
+        var data = args.length ? args[0] : undefined;
+
+        if (!DataType.isFunction(callback)) {
+            return this;
+        }
+
+        var _self = this;
+        names.forEach(function(name) {
+            if (!_self.__moduleEvents[name]) {
+                _self.__moduleEvents[name] = [];
+            }
+            _self.__moduleEvents[name].push({
+                callback: callback
+                ,data: data
+            });
+        });
+        return this;
+    }
+    ,off: function(/* [names][, callback] */) {
+        var args = [].slice.call(arguments);
+        var names = eventNames(args.shift());
+        var callback = args[0];
+
+        if (!names.length) {
+            names = Object.keys(this.__moduleEvents);
+        }
+
+        var _self = this;
+        names.forEach(function(name) {
+            var handlers = _self.__moduleEvents[name];
+            if (!handlers) {
+                return;
+            }
+            if (!DataType.isFunction(callback)) {
+                delete _self.__moduleEvents[name];
+                return;
+            }
+
+            handlers = handlers.filter(function(handler) {
+                return handler.callback !== callback;
+            });
+            if (handlers.length) {
+                _self.__moduleEvents[name] = handlers;
+            }
+            else {
+                delete _self.__moduleEvents[name];
+            }
+        });
+        return this;
+    }
+    ,trigger: function(name, event) {
+        var handlers = this.__moduleEvents[name] || [];
+        var sourceEvent = event instanceof Event ? event : new Event(name, event);
+
+        for (var i = 0; i < handlers.length; i++) {
+            if (sourceEvent.isPropagationStopped()) {
                 break;
             }
-        }
-        else {
-        	switch (args.length) {
-                case 2:
-                    cache = args[0];
-                    callback = args[1];
-                break;
-                case 1:
-                    if (DataType.isFunction(args[0])) {
-                        callback = args[0];
-                    }
-                break;
+
+            var handler = handlers[i];
+            var handlerEvent = new Event(name, sourceEvent.getEventProps(), handler.data);
+            handler.callback.call(this, handlerEvent);
+            if (handlerEvent.isPropagationStopped()) {
+                sourceEvent.stopPropagation();
             }
-        	if (DataType.isFunction(args[0])) {
-                 callback = args[0];
+            if (handlerEvent.isDefaultPrevented()) {
+                sourceEvent.preventDefault();
             }
         }
-        data = data || data;
-        callback = callback || function() {};
-        cache = typeof cache !== 'undefined' ? cache : false;
-        names = names.trim();
-        names = names ? names.replace(/(\s{2,})/, ' ') : '';
-        if (type === 'on') {
-            return [names, data, callback];
+
+        return !sourceEvent.isDefaultPrevented();
+    }
+    ,hasHandlers: function(name) {
+        if (name) {
+            return Boolean(this.__moduleEvents[name] && this.__moduleEvents[name].length);
         }
-        else {
-            return [names, callback, cache];
-        }
-	}
+        return Object.keys(this.__moduleEvents).some(function(eventName) {
+            return this.__moduleEvents[eventName].length > 0;
+        }, this);
+    }
 });
 
-setModule('Event', EventModule);
+setModule('EventModule', EventModule);
 module.exports = EventModule;
