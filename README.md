@@ -132,6 +132,26 @@ console.log(dataSet.getData());
 
 Supported filter types are `equals`, `not-equals`, `contains`, `not-contains`, `less-than`, `greater-than`, `starts-with`, `ends-with`, `regex`, and `function`, along with their existing shorthand aliases.
 
+### Idle timeouts
+
+`Timeout` tracks elapsed idle time in seconds and resets on pointer, keyboard, and touch activity unless `manualHandlers` is enabled.
+
+```js
+const timeout = new bglib.Timeout({
+    time: 300,
+    autostart: false,
+    callback: function() {
+        console.log('Idle timeout reached');
+    }
+});
+
+timeout.restart();
+timeout.stop();
+timeout.destroy();
+```
+
+Call `destroy()` or its `dispose()` alias when the timer is no longer needed to remove its interval and activity listeners.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS

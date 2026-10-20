@@ -2426,63 +2426,92 @@ module.exports = {
   \********************************/
 (module) {
 
-module.exports = function (_opts) {
-  if (typeof _opts == 'undefined') _opts = {};
-  var _expTime = _opts.time || 1800; // 30 minutes
-  var _expCallback = _opts.callback || function () {
+module.exports = function (opts) {
+  opts = opts || {};
+  var expTime = Number(opts.time);
+  expTime = Number.isFinite(expTime) && expTime >= 0 ? expTime : 1800;
+  var callback = typeof opts.callback === 'function' ? opts.callback : function () {
     alert('Session Expired');
     location.reload();
   };
-  var _idleCounter = 0;
-  var _isRunning = _opts.autostart || true;
-  var _restartTimeout = function () {
-    _idleCounter = 0;
-    _isRunning = true;
+  var isRunning = typeof opts.autostart === 'undefined' ? true : Boolean(opts.autostart);
+  var destroyed = false;
+  var idleStartedAt = Date.now();
+  var idleCounter = 0;
+  var activityEvents = ['pointerdown', 'pointermove', 'keydown', 'touchstart'];
+  var resetCounter = function () {
+    idleStartedAt = Date.now();
+    idleCounter = 0;
   };
-  var _stopTimeout = function () {
-    _idleCounter = 0;
-    _isRunning = false;
-  };
-  var _resetCounter = function () {
-    _idleCounter = 0;
-    // clog('reset counter');
-  };
-  var _checkIdleTime = function () {
-    if (_isRunning) {
-      _idleCounter++;
-      if (_idleCounter >= _expTime) {
-        _isRunning = false;
-        _expCallback();
-      }
+  var restartTimeout = function () {
+    if (!destroyed) {
+      resetCounter();
+      isRunning = true;
     }
   };
-  var _triggerCallback = function () {
-    _expCallback();
+  var stopTimeout = function () {
+    resetCounter();
+    isRunning = false;
   };
-  if (typeof _opts.manualHandlers === 'undefined' || !_opts.manualHandlers) {
-    document.onclick = _resetCounter;
-    document.onmousemove = _resetCounter;
-    document.onkeypress = _resetCounter;
-    //--possibly need to add listeners to cover touch devices
+  var checkIdleTime = function () {
+    if (!isRunning || destroyed) {
+      return;
+    }
+    var elapsed = (Date.now() - idleStartedAt) / 1000;
+    idleCounter = Math.floor(elapsed);
+    if (elapsed >= expTime) {
+      isRunning = false;
+      callback();
+    }
+  };
+  var triggerCallback = function () {
+    callback();
+  };
+  var activityHandler = function () {
+    resetCounter();
+  };
+  if (!opts.manualHandlers) {
+    activityEvents.forEach(function (name) {
+      document.addEventListener(name, activityHandler, {
+        passive: true
+      });
+    });
   }
-  window.setInterval(_checkIdleTime, 1000); // runs every second
-  var _exports = {
-    expTime: _expTime,
+  var interval = window.setInterval(checkIdleTime, 1000);
+  var destroy = function () {
+    if (destroyed) {
+      return;
+    }
+    destroyed = true;
+    isRunning = false;
+    window.clearInterval(interval);
+    if (!opts.manualHandlers) {
+      activityEvents.forEach(function (name) {
+        document.removeEventListener(name, activityHandler);
+      });
+    }
+  };
+  return {
+    expTime: expTime,
     isRunning: function () {
-      return _isRunning;
+      return isRunning;
     },
-    restart: _restartTimeout,
-    stop: _stopTimeout,
+    restart: restartTimeout,
+    stop: stopTimeout,
+    destroy: destroy,
+    dispose: destroy,
     counter: {
       get: function () {
-        return _idleCounter;
+        if (isRunning && !destroyed) {
+          idleCounter = Math.floor((Date.now() - idleStartedAt) / 1000);
+        }
+        return idleCounter;
       },
-      reset: _resetCounter
+      reset: resetCounter
     },
-    check: _checkIdleTime,
-    triggerCallback: _triggerCallback
+    check: checkIdleTime,
+    triggerCallback: triggerCallback
   };
-  return _exports;
 };
 
 /***/ },
