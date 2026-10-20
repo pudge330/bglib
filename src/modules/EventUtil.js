@@ -1,20 +1,8 @@
 module.exports = {
-    addHandler: function(element, type, handler) {
-        if (element.addEventListener) {
-            element.addEventListener(type, handler, false);
-        } else if (element.attachEvent) {
-            element.attachEvent("on" + type, handler);
-        } else {
-            element["on" + type] = handler;
-        }
+    addHandler: function(element, type, handler, options) {
+        element.addEventListener(type, handler, options || false);
     },
-    removeHandler: function(element, type, handler) {
-        if (element.removeEventListener) {
-            element.removeEventListener(type, handler, false);
-        } else if (element.detachEvent) {
-            element.detachEvent("on" + type, handler);
-        } else {
-            element["on" + type] = null;
-        }
+    removeHandler: function(element, type, handler, options) {
+        element.removeEventListener(type, handler, options || false);
     }
 };
