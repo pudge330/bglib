@@ -112,6 +112,26 @@ module.off('change');
 
 `off(name, callback)` removes matching handlers, `off(name)` removes every handler for that event, and `off()` removes all module handlers. `trigger()` returns `false` when a handler calls `event.preventDefault()` and `true` otherwise.
 
+### Filtering and sorting data
+
+`DatasetModule` supports field sorting and grouped filters. Filters marked `and` must all pass; when `or` filters are present, at least one must also pass.
+
+```js
+const dataSet = new bglib.DatasetModule({ data: users });
+
+dataSet.filter([
+    ['active', true],
+    ['name', 'Admin', 'starts-with', 'or'],
+    ['role', 'owner', 'equals', 'or']
+]).sort([
+    ['name', 'asc']
+]);
+
+console.log(dataSet.getData());
+```
+
+Supported filter types are `equals`, `not-equals`, `contains`, `not-contains`, `less-than`, `greater-than`, `starts-with`, `ends-with`, `regex`, and `function`, along with their existing shorthand aliases.
+
 ## Distribution files
 
 - `dist/bglib.js`: readable UMD build for browser globals, AMD, and CommonJS

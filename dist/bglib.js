@@ -1282,268 +1282,221 @@ const EventModule = __webpack_require__(/*! ./EventModule */ "./src/modules/Even
 var DatasetModule = EventModule.extend({
   dataSet: undefined,
   dataSetState: undefined,
-  constructor: function () {
+  constructor: function (opts) {
     EventModule.apply(this, arguments);
-    var opts = arguments[0] || [];
+    opts = opts || {};
     if (opts.onChange) {
       this.on('change', opts.onChange);
     }
-    if (opts.data && Array.isArray(opts.data)) {
-      var clone = opts.clone || false;
-      this.dataSet = clone ? opts.data.slice(0) : opts.data;
-    } else {
-      this.dataSet = [];
-    }
+    this.dataSet = Array.isArray(opts.data) ? opts.clone ? opts.data.slice() : opts.data : [];
     this.dataSetState = new Array(this.dataSet.length).fill(true);
     this.triggerChange('set');
   },
   getData: function () {
     var _self = this;
     return this.dataSet.filter(function (value, index) {
-      if (_self.dataSetState[index]) return true;else return false;
+      return _self.dataSetState[index];
     });
   },
   triggerChange: function (type) {
-    var _self = this;
     this.trigger('change', {
-      caller: _self,
-      dataSet: _self.getData(),
+      caller: this,
+      dataSet: this.getData(),
       type: type
     });
-  },
-  setData: function (data, clone) {
-    clone = clone || false;
-    this.dataSet = clone ? data.slice(0) : data;
-    this.dataSetState = new Array(this.dataSet.length).fill(true);
     return this;
   },
+  setData: function (data, clone) {
+    this.dataSet = Array.isArray(data) ? clone ? data.slice() : data : [];
+    this.dataSetState = new Array(this.dataSet.length).fill(true);
+    return this.triggerChange('set');
+  },
   determineSort: function (order) {
-    var _self = this;
-    order = order.toLowerCase();
-    if (Array.isArray(order)) return order;else if (['desc', '>'].indexOf(order) !== -1) return 'desc';else
-      // asc <
-      return 'asc';
+    if (DataType.isFunction(order)) {
+      return order;
+    }
+    order = DataType.isString(order) ? order.toLowerCase() : 'asc';
+    return ['desc', '>'].indexOf(order) !== -1 ? 'desc' : 'asc';
   },
   sort: function (sorts) {
     var _self = this;
-    var sortsCopy = [];
-    for (var i = 0; i < sorts.length; i++) {
-      var name = null,
-        direction = null;
-      if (typeof sorts[i] === 'string') {
-        name = sorts[i];
-        direction = 'asc';
-      } else if (Array.isArray(sorts[i])) {
-        name = sorts[i][0];
-        direction = this.determineSort(sorts[i][1]);
-      } else if (DataType.isObject(sorts[i])) {
-        name = sorts[i].name;
-        direction = sorts[i].dir;
-        direction = this.determineSort(direction);
+    sorts = Array.isArray(sorts) ? sorts : [sorts];
+    var normalized = sorts.map(function (sort) {
+      if (DataType.isString(sort)) {
+        return {
+          name: sort,
+          dir: 'asc'
+        };
       }
-      if (name) {
-        sortsCopy.push({
-          name: name,
-          dir: direction
-        });
+      if (Array.isArray(sort)) {
+        return {
+          name: sort[0],
+          dir: _self.determineSort(sort[1])
+        };
       }
-    }
-    var arr = this.dataSet;
-    arr.sort(function (value1, value2) {
-      for (var i = 0; i < sortsCopy.length; i++) {
-        var s = sortsCopy[i];
-        if (Array.isArray(s.dir)) {
-          var returned = s.dir(value1[s.name], value2[s.name]);
-          if ([-1, 1].indexOf(returned) !== -1) {
-            return returned;
-          }
-        } else {
-          if (value1[s.name] > value2[s.name]) return s.dir === 'asc' ? 1 : -1;
-          if (value1[s.name] < value2[s.name]) return s.dir === 'asc' ? -1 : 1;
+      if (sort && DataType.isObject(sort)) {
+        return {
+          name: sort.name,
+          dir: _self.determineSort(sort.dir)
+        };
+      }
+      return null;
+    }).filter(function (sort) {
+      return sort && sort.name;
+    });
+    var entries = this.dataSet.map(function (value, index) {
+      return {
+        value: value,
+        active: _self.dataSetState[index]
+      };
+    });
+    entries.sort(function (entry1, entry2) {
+      for (var i = 0; i < normalized.length; i++) {
+        var sort = normalized[i];
+        var value1 = entry1.value[sort.name];
+        var value2 = entry2.value[sort.name];
+        var result = 0;
+        if (DataType.isFunction(sort.dir)) {
+          result = Number(sort.dir(value1, value2, entry1.value, entry2.value)) || 0;
+        } else if (value1 > value2) {
+          result = sort.dir === 'asc' ? 1 : -1;
+        } else if (value1 < value2) {
+          result = sort.dir === 'asc' ? -1 : 1;
+        }
+        if (result !== 0) {
+          return result;
         }
       }
       return 0;
     });
-    this.triggerChange('sort');
-    return this;
+    this.dataSet = entries.map(function (entry) {
+      return entry.value;
+    });
+    this.dataSetState = entries.map(function (entry) {
+      return entry.active;
+    });
+    return this.triggerChange('sort');
   },
   determineFilterType: function (type) {
-    type = type.toLowerCase();
-    if (['equals', 'equal', '='].indexOf(type) !== -1) return 'equals';else if (['!equals', '!equal', '!=', '<>'].indexOf(type) !== -1) return 'not-equals';else if (['contains', 'contain', 'has'].indexOf(type) !== -1) return 'contains';else if (['!contains', '!contain', '!has'].indexOf(type) !== -1) return 'not-contains';else if (['<', 'less-than', 'lessthan', 'less'].indexOf(type) !== -1) return 'less-than';else if (['>', 'greater-than', 'greaterthan', 'greater'].indexOf(type) !== -1) return 'greater-than';else if (['starts-with', 'starts', '^'].indexOf(type) !== -1) return 'starts-with';else if (['ends-with', 'ends', '$'].indexOf(type) !== -1) return 'ends-with';else if (['regex'].indexOf(type) !== -1) return 'regex';else if (['function', 'func'].indexOf(type) !== -1) return 'function';else return 'equals';
-    //--todo: add 'regex' and 'func' type
+    type = DataType.isString(type) ? type.toLowerCase() : 'equals';
+    var aliases = {
+      equal: 'equals',
+      '=': 'equals',
+      '!equal': 'not-equals',
+      '!equals': 'not-equals',
+      '!=': 'not-equals',
+      '<>': 'not-equals',
+      contain: 'contains',
+      has: 'contains',
+      '!contain': 'not-contains',
+      '!contains': 'not-contains',
+      '!has': 'not-contains',
+      '<': 'less-than',
+      lessthan: 'less-than',
+      less: 'less-than',
+      '>': 'greater-than',
+      greaterthan: 'greater-than',
+      greater: 'greater-than',
+      starts: 'starts-with',
+      '^': 'starts-with',
+      ends: 'ends-with',
+      '$': 'ends-with',
+      func: 'function'
+    };
+    var supported = ['equals', 'not-equals', 'contains', 'not-contains', 'less-than', 'greater-than', 'starts-with', 'ends-with', 'regex', 'function'];
+    type = aliases[type] || type;
+    return supported.indexOf(type) !== -1 ? type : 'equals';
+  },
+  determineFilterGlue: function (glue) {
+    glue = DataType.isString(glue) ? glue.toLowerCase() : 'and';
+    return ['or', '||', '|'].indexOf(glue) !== -1 ? 'or' : 'and';
   },
   detemineFilterGlue: function (glue) {
-    glue = glue.toLowerCase();
-    if (['and', '&'].indexOf(glue) !== 1) return 'and';else if (['or', '||', '|'].indexOf(glue) !== 1) return 'or';else return 'and';
+    return this.determineFilterGlue(glue);
+  },
+  normalizeFilter: function (filter) {
+    var normalized;
+    if (Array.isArray(filter)) {
+      normalized = {
+        name: filter[0],
+        value: filter[1],
+        type: filter[2],
+        glue: filter[3]
+      };
+    } else if (filter && DataType.isObject(filter)) {
+      normalized = {
+        name: filter.name,
+        value: filter.value,
+        type: filter.type,
+        glue: filter.glue,
+        flags: filter.flags
+      };
+    } else {
+      return null;
+    }
+    if (!normalized.name) {
+      return null;
+    }
+    normalized.type = this.determineFilterType(normalized.type);
+    normalized.glue = this.determineFilterGlue(normalized.glue);
+    return normalized;
+  },
+  testFilter: function (row, filter, index) {
+    var value = row[filter.name];
+    switch (filter.type) {
+      case 'not-equals':
+        return value !== filter.value;
+      case 'contains':
+        return value !== null && typeof value !== 'undefined' && typeof value.includes === 'function' && value.includes(filter.value);
+      case 'not-contains':
+        return value === null || typeof value === 'undefined' || typeof value.includes !== 'function' || !value.includes(filter.value);
+      case 'less-than':
+        return value < filter.value;
+      case 'greater-than':
+        return value > filter.value;
+      case 'starts-with':
+        return String(value).startsWith(String(filter.value));
+      case 'ends-with':
+        return String(value).endsWith(String(filter.value));
+      case 'regex':
+        var regex = filter.value instanceof RegExp ? filter.value : new RegExp(filter.value, filter.flags || '');
+        regex.lastIndex = 0;
+        return regex.test(String(value));
+      case 'function':
+        return DataType.isFunction(filter.value) && Boolean(filter.value(value, row, index));
+      case 'equals':
+      default:
+        return value === filter.value;
+    }
   },
   filter: function (filters, returnFiltered) {
-    returnFiltered = returnFiltered || false;
     var _self = this;
-    _self.reset();
-    var filtersCopy = {
-      and: [],
-      or: []
-    };
-    for (var i = 0; i < filters.length; i++) {
-      var name = null,
-        value = null,
-        type = null,
-        glue = null;
-      if (Array.isArray(filters[i])) {
-        switch (filters[i].length) {
-          case 4:
-            name = filters[i][0];
-            value = filters[i][1];
-            type = this.determineFilterType(filters[i][2]);
-            glue = this.detemineFilterGlue(filters[i][3]);
-            break;
-          case 3:
-            name = filters[i][0];
-            value = filters[i][1];
-            type = this.determineFilterType(filters[i][2]);
-            glue = 'and';
-            break;
-          case 2:
-          default:
-            name = filters[i][0];
-            value = filters[i][1];
-            type = 'equals';
-            glue = 'and';
-            break;
-        }
-      } else if (DataType.isObject(filters[i])) {
-        name = filters[i].name;
-        value = filters[i].value;
-        type = filters[i].type || 'equals';
-        glue = filters[i].glue || 'and';
-      }
-      if (name) {
-        if (glue == 'or') {
-          filtersCopy.or.push({
-            name: name,
-            value: value,
-            type: type,
-            glue: glue
-          });
-        } else {
-          filtersCopy.and.push({
-            name: name,
-            value: value,
-            type: type,
-            glue: glue
-          });
-        }
-      }
-    }
-    var filtered = this.dataSet.filter(function (value, index) {
-      var passedFilter = true;
-      var test;
-      for (var key in filtersCopy) {
-        if (filtersCopy.hasOwnProperty(key)) {
-          for (var i = 0; i < filtersCopy[key].length; i++) {
-            var f = filtersCopy[key][i];
-            switch (f.type) {
-              case 'not-equals':
-                if (value[f.name] == f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'contains':
-                if (value[f.name].indexOf(f.value) === -1) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'not-contains':
-                if (value[f.name].indexOf(f.value) !== -1) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'less-than':
-                if (value[f.name] < f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'greater-than':
-                if (value[f.name] > f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'starts-width':
-                test = value[f.name].substring(0, f.value.length);
-                if (test != f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'ends-with':
-                test = value[f.name].substring(value[f.name] - f.value.length, value[f.name].length);
-                if (test != f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'regex':
-                var regexFlags = f.flags || '';
-                var regex = new RegExp(f.value, regexFlags);
-                if (!value[f.name].match(regex)) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'func':
-                if (!Array.isArray(f.value) || f.value(value[f.name]) === false) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-              case 'equals':
-              default:
-                if (value[f.name] != f.value) {
-                  passedFilter = false;
-                  if (key == 'and') {
-                    i = filtersCopy[key].length;
-                  }
-                }
-                break;
-            }
-          }
-        }
-      }
-      if (!passedFilter) {
-        _self.dataSetState[index] = false;
-      }
-      return passedFilter;
+    filters = Array.isArray(filters) ? filters : [filters];
+    var normalized = filters.map(function (filter) {
+      return _self.normalizeFilter(filter);
+    }).filter(Boolean);
+    var andFilters = normalized.filter(function (filter) {
+      return filter.glue === 'and';
     });
+    var orFilters = normalized.filter(function (filter) {
+      return filter.glue === 'or';
+    });
+    this.dataSetState = this.dataSet.map(function (row, index) {
+      var passesAnd = andFilters.every(function (filter) {
+        return _self.testFilter(row, filter, index);
+      });
+      var passesOr = !orFilters.length || orFilters.some(function (filter) {
+        return _self.testFilter(row, filter, index);
+      });
+      return passesAnd && passesOr;
+    });
+    var filtered = this.getData();
     this.triggerChange('filter');
     return returnFiltered ? filtered : this;
   },
   reset: function () {
     this.dataSetState = new Array(this.dataSet.length).fill(true);
-    this.triggerChange('reset');
-    return this;
+    return this.triggerChange('reset');
   }
 }, {
   sort: function (data, sorts) {
@@ -1559,11 +1512,12 @@ var DatasetModule = EventModule.extend({
     }).filter(filters, true);
   },
   filterSort: function (data, filters, sorts) {
-    var ds = new DatasetModule({
+    var dataSet = new DatasetModule({
       data: data,
       clone: true
     });
-    return ds.setData(ds.filter(filters, true)).sort(sorts).getData();
+    dataSet.filter(filters).sort(sorts);
+    return dataSet.getData();
   }
 });
 setModule('Dataset', DatasetModule);
